@@ -1,0 +1,60 @@
+---
+import Button from "@/components/ui/Button.astro";
+import Container from "@/components/ui/Container.astro";
+import { cn } from "@/lib/utils";
+
+export type CtaContent = {
+  title: string;
+  accent: string;
+  description: string;
+  secondary: { label: string; href: string };
+  primary: { label: string; href: string };
+};
+
+interface Props {
+  content: CtaContent;
+  id?: string;
+  /** On phones move the first accent word up to line one (Home in Figma). */
+  mobileSplit?: boolean;
+  /** 50px of white space under the band (inner pages in Figma). */
+  bottomGap?: boolean;
+  /** Description up to 582px wide (Home) instead of 421px. */
+  wideText?: boolean;
+}
+/** Black call-to-action band. */
+const { content, id = "cta-title", mobileSplit = false, bottomGap = false, wideText = false } = Astro.props;
+const [firstAccent, ...restAccent] = content.accent.split(" ");
+---
+
+<section aria-labelledby={id}>
+  <Container bordered={bottomGap} class={cn(bottomGap && "lg:pb-[50px]")}>
+    <div class="relative overflow-hidden bg-ink px-6 py-14 sm:px-8 lg:px-[50px] lg:py-[50px]">
+      <div class="relative flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+        <div data-reveal class="flex max-w-[764px] flex-col gap-4">
+          <h2 id={id} class="font-heading-flex text-[28px] leading-9 font-medium tracking-[-0.03em] text-white lg:text-h2 lg:leading-[44px]">
+            {
+              mobileSplit ? (
+                <Fragment>
+                  {content.title}{" "}
+                  <span class="lg:font-pixel-line">{firstAccent}</span>{" "}
+                  <br class="lg:hidden" />
+                  <span class="font-pixel-line text-white">{restAccent.join(" ")}</span>
+                </Fragment>
+              ) : (
+                <Fragment>
+                  {content.title}{" "}
+                  <span class="font-pixel-line text-white">{content.accent}</span>
+                </Fragment>
+              )
+            }
+          </h2>
+          <p class={cn("text-base leading-6 text-white/70", mobileSplit || wideText ? "max-w-[582px]" : "max-w-[421px]")}>{content.description}</p>
+        </div>
+        <div data-reveal data-delay="0.15" class="flex gap-4 max-lg:[&>*]:flex-1">
+          <Button href={content.secondary.href} variant="dark-raised" size="lg">{content.secondary.label}</Button>
+          <Button href={content.primary.href} size="lg">{content.primary.label}</Button>
+        </div>
+      </div>
+    </div>
+  </Container>
+</section>

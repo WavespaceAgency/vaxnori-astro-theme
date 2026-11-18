@@ -269,3 +269,30 @@
     border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath fill='%23d4d4d4' d='M0 0h1v1H0zM5 0h1v1H5zM0 5h1v1H0zM5 5h1v1H5zM1 0h2v1H1zM1 5h2v1H1zM0 1h1v2H0zM5 1h1v2H5z'/%3E%3C/svg%3E") 1 round;
   }
 }
+
+/*
+ * Scroll-reveal start state (see src/scripts/motion.ts).
+ * Only applied when JavaScript runs (html.js) and the visitor allows motion,
+ * so content is always visible without JS or with "reduce motion".
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-reveal]:not([data-revealed]) {
+    opacity: 0.001;
+    transform: translateY(28px);
+  }
+  html.js [data-reveal="scale"]:not([data-revealed]) {
+    transform: translateY(20px) scale(0.97);
+  }
+  html.js [data-stagger]:not([data-revealed]) [data-stagger-item] {
+    opacity: 0.001;
+    transform: translateY(28px);
+  }
+}
+
+/* Above-the-fold fade-up done in CSS (starts on first paint, keeps LCP fast). */
+@utility hero-reveal {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: hero-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--delay, 0s);
+  }
+}

@@ -12,7 +12,7 @@ import { siteConfig } from "@/config/site";
 
 export const homePage = {
   meta: {
-    title: undefined, // undefined = use the default title from src/app/layout.tsx
+    title: undefined, // undefined = use the default site title (src/lib/seo.ts)
     description: siteConfig.description,
   },
 

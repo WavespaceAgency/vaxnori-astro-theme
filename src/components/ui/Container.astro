@@ -1,0 +1,15 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { cn } from "@/lib/utils";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Draw the thin vertical guide lines from the design on both sides. */
+  bordered?: boolean;
+}
+/** The 1240px content column used by every section. */
+const { bordered = false, class: className, ...attrs } = Astro.props;
+---
+
+<div class={cn("mx-auto w-[calc(100%-2rem)] max-w-site", bordered && "border-x border-line", className)} {...attrs}>
+  <slot />
+</div>

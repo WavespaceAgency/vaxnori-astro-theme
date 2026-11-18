@@ -1,0 +1,23 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+  class?: string;
+  tone?: "brand" | "light";
+  line?: boolean;
+  as?: "p" | "h2" | "span";
+}
+/** Small uppercase label above a section heading, e.g. "—— PRODUCT". */
+const { class: className, tone = "brand", line = true, as: Tag = "p" } = Astro.props;
+---
+
+<Tag
+  class={cn(
+    "flex items-center gap-2 text-xs leading-5 tracking-[0.02em] uppercase lg:text-sm",
+    tone === "brand" ? "text-brand-strong" : "text-white/70",
+    className,
+  )}
+>
+  {line && <span aria-hidden="true" class={cn("h-px w-[26px]", tone === "brand" ? "bg-brand" : "bg-white/50")} />}
+  <slot />
+</Tag>

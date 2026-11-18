@@ -1,0 +1,36 @@
+---
+import Accordion from "@/components/ui/Accordion.astro";
+import Button from "@/components/ui/Button.astro";
+import Container from "@/components/ui/Container.astro";
+import SectionHeading from "@/components/ui/SectionHeading.astro";
+
+export type FaqContent = {
+  eyebrow: string;
+  title: string;
+  accent: string;
+  cta: { label: string; href: string };
+  items: readonly { question: string; answer: string }[];
+};
+
+interface Props {
+  content: FaqContent;
+  /** 100px gap above the section (inner pages in Figma). */
+  gapTop?: boolean;
+}
+const { content, gapTop = false } = Astro.props;
+---
+
+<section aria-labelledby="faq-title">
+  <Container bordered class={gapTop ? "pt-14 lg:pt-[100px]" : "border-t border-dashed border-t-line-strong"}>
+    <div class={gapTop ? "grid border-t border-dashed border-line-strong lg:grid-cols-[540fr_700fr]" : "grid lg:grid-cols-[540fr_700fr]"}>
+      <div data-reveal class="flex flex-col items-start gap-3 px-6 pt-14 sm:px-8 lg:gap-8 lg:px-[50px] lg:pt-8 lg:pb-10">
+        <SectionHeading id="faq-title" eyebrow={content.eyebrow} title={content.title} accent={content.accent} titleClass="max-w-[420px]" />
+        <Button href={content.cta.href} size="lg">{content.cta.label}</Button>
+      </div>
+      <div data-stagger data-gap="0.1" class="border-dashed border-line-strong lg:border-l">
+        <Accordion items={content.items} variant="dashed" stagger />
+      </div>
+    </div>
+    <div aria-hidden="true" class="bg-dots h-14 border-t border-dashed border-line-strong lg:h-[100px]"></div>
+  </Container>
+</section>

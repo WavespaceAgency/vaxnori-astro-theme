@@ -26,3 +26,27 @@ This file lists only what is new or different in the Astro version. It moves int
 - **Share image:** a static `public/og.png` (1200×630) replaces the Next.js generated images for now.
 - **Line icons** are plain SVG strings in `src/components/icons/line-icons.ts` (config files pick them by name).
 - Node `>=22.23.4` (Astro 7 requirement), `.nvmrc` = 22.
+
+## Phase 3 – Shared parts + Home page
+- **Method:** every Next.js component was ported 1:1 (same Tailwind classes, same config data) and checked
+  against the live Next.js demo (vaxnori-ai.vercel.app), which was already matched to Figma section by section.
+  Result: all 10 Home sections + header + footer have **identical heights** at 1440, 402 and 320px;
+  pixel difference 0.00–0.47% per section (font anti-aliasing only). Full page: 0.07% (1440), 0.12% (402), 0.14% (320).
+- **Animations without React:** one shared script (`src/scripts/motion.ts`) reads data attributes:
+  `data-reveal`, `data-stagger` / `data-stagger-item`, `data-count`, `data-fit` – same values as the Framer site.
+  Loop helpers for the mockups live in `src/scripts/loop.ts` (`loop`, `rollNumber`, `swapText`, `appear`, `typeText`).
+  Total JS on Home: 89 KB raw / ~32 KB gzip (Motion engine 25 KB gzip) – Next.js shipped React + Motion.
+- **Mockups render their final frame in the HTML** (How-it-works cards, Launch/Grow/Run). Without JavaScript or with
+  reduced motion they look complete; with motion the script resets them and plays the loop while on screen.
+  The hero preview starts at step 1 (as in Next.js) and shows the "Live" step for reduced motion.
+- **Scroll-reveal start state** is CSS (`html.js [data-reveal]`), so nothing is hidden without JavaScript.
+- **ScaleToFit** sets its scale with a tiny inline script before first paint (no full-size flash on phones).
+- **Footer email** `hello@example.com` is longer than the Figma email: it may wrap after the "@" on small phones
+  (`<wbr>`), never mid-word.
+- **Newsletter input stays 14px** on phones (Figma). Note: iOS Safari zooms in on inputs under 16px when focused.
+  Change `text-sm` to `text-base` in `NewsletterForm.astro` if you prefer no zoom over the exact Figma size.
+- **Whitespace:** Astro drops a plain space between `{expression}` and a tag inside JSX-style expressions –
+  headings use explicit `{" "}` (fixed "A smarter way to build a company").
+- **Lighthouse mobile (local production build):** Performance 99–100, Accessibility 97, Best Practices 100, SEO 100.
+  TBT 10–20 ms, CLS 0.027 (font swap in the hero; preloading fonts made LCP slower, so it was not kept).
+  The 97 is the accepted Figma choices: white on Primary `#ff4820` (3.4:1) and the grey placeholder logos.

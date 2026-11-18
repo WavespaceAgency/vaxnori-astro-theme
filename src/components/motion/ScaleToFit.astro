@@ -1,0 +1,32 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+  /** Width of the fixed design in px (e.g. 1140). */
+  width: number;
+  /** Height of the design. Leave out and use aspect-[…] classes for a responsive height. */
+  height?: number;
+  class?: string;
+}
+/**
+ * Shows a fixed-size design scaled down to the available width, like the Figma mobile frames.
+ * The box keeps its aspect ratio, so there is no layout shift. Scale is set by src/scripts/motion.ts.
+ */
+const { width, height, class: className } = Astro.props;
+---
+
+<div
+  data-fit={width}
+  class={cn("relative w-full overflow-hidden", className)}
+  style={height ? `aspect-ratio: ${width} / ${height}` : undefined}
+>
+  <div class="absolute top-0 left-0 h-[calc(100%/var(--fit,1))] origin-top-left" style={`width: ${width}px; transform: scale(var(--fit, 1))`}>
+    <slot />
+  </div>
+</div>
+<script is:inline>
+  // Set the scale before first paint (the shared script keeps it updated on resize).
+  (function (el) {
+    el.style.setProperty("--fit", String(Math.min(1, el.clientWidth / Number(el.dataset.fit))));
+  })(document.currentScript.previousElementSibling);
+</script>

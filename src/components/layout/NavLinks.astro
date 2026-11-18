@@ -1,0 +1,70 @@
+---
+import type { NavLink } from "@/config/site";
+import { cn, isActivePath } from "@/lib/utils";
+
+interface Props {
+  links: readonly NavLink[];
+}
+/** Desktop navbar links: a soft highlight slides to the hovered link, a line marks the current page. */
+const { links } = Astro.props;
+const pathname = Astro.url.pathname;
+---
+
+<ul class="relative flex h-full" data-nav-links>
+  <span data-nav-hover aria-hidden="true" class="pointer-events-none absolute top-1 bottom-1 left-0 rounded-[6px] bg-canvas opacity-0"></span>
+  {
+    links.map((link) => {
+      const active = isActivePath(pathname, link.href);
+      return (
+        <li class="relative flex h-full border-r border-line">
+          <a
+            href={link.href}
+            aria-current={active ? "page" : undefined}
+            class="relative flex h-full items-center px-5 text-base leading-6 font-medium text-ink focus-visible:-outline-offset-2"
+          >
+            {active && <span class="absolute inset-x-5 bottom-0 h-0.5 bg-brand" aria-hidden="true" />}
+            <span class={cn("relative", !active && "text-ink/80 transition-colors hover:text-ink")}>{link.label}</span>
+          </a>
+        </li>
+      );
+    })
+  }
+</ul>
+
+<script>
+  import { animate } from "motion";
+
+  const spring = { type: "spring", stiffness: 420, damping: 36 } as const;
+
+  document.querySelectorAll<HTMLElement>("[data-nav-links]").forEach((list) => {
+    const pill = list.querySelector<HTMLElement>("[data-nav-hover]");
+    if (!pill) return;
+    let visible = false;
+
+    const moveTo = (link: HTMLElement) => {
+      const li = link.parentElement as HTMLElement;
+      const x = li.offsetLeft + 4;
+      const width = li.offsetWidth - 9; // inset 4px each side, minus the 1px divider
+      if (!visible) {
+        // First hover: appear in place (no slide from the left edge).
+        pill.style.transform = `translateX(${x}px)`;
+        pill.style.width = `${width}px`;
+        animate(pill, { opacity: 1 }, { duration: 0.15 });
+      } else {
+        animate(pill, { x, width }, spring);
+      }
+      visible = true;
+    };
+    const hide = () => {
+      visible = false;
+      animate(pill, { opacity: 0 }, { duration: 0.15 });
+    };
+
+    list.querySelectorAll<HTMLElement>("a").forEach((link) => {
+      link.addEventListener("mouseenter", () => moveTo(link));
+      link.addEventListener("focus", () => moveTo(link));
+      link.addEventListener("blur", hide);
+    });
+    list.addEventListener("mouseleave", hide);
+  });
+</script>

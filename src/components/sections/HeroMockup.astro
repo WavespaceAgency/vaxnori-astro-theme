@@ -1,0 +1,265 @@
+---
+import { Image } from "astro:assets";
+import Icon from "@/components/icons/Icon.astro";
+import LineIcon from "@/components/icons/LineIcon.astro";
+import type { HomePage } from "@/config/pages/home";
+import { getImage } from "@/lib/images";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  mockup: HomePage["hero"]["mockup"];
+  background: string;
+}
+/**
+ * Animated product preview under the hero. Plays Kickoff → Build → Outreach → Live in a loop
+ * (like the live site). Drawn at the Figma size (1140×562) and scaled by <ScaleToFit>.
+ * Step data (labels, bar values, toasts) lives in src/config/pages/home.ts → hero.mockup.steps.
+ */
+const { mockup, background } = Astro.props;
+const step = mockup.steps[0];
+const [launchTask, outreachTask] = mockup.tasks;
+
+const card = "rounded-card border bg-surface shadow-card transition-[border-color,box-shadow] duration-700 ease-[cubic-bezier(0.45,0,0.2,1)]";
+const chip = "rounded-[3px] border border-line bg-[#fcfcfc] px-1.5 py-0.5 text-[10px] leading-[14px] font-semibold tracking-[0.02em] text-subtle";
+const glowOn = "border-brand shadow-[0_0_0_3px_rgb(255_72_32/0.12),0_8px_24px_-8px_rgb(255_72_32/0.35)]";
+const glowOff = "border-[#efefef]";
+const glow = (on: boolean) => (on ? glowOn : glowOff);
+const statusTone = {
+  todo: "bg-status-todo-bg text-status-todo",
+  progress: "bg-status-progress-bg text-status-progress",
+  done: "bg-status-done-bg text-status-done",
+} as const;
+const statusOf = (v: number) => (v >= 100 ? "done" : v > 0 ? "progress" : "todo");
+const swap = "col-start-1 row-start-1";
+
+/**
+ * Paths for the travelling dot (Figma coordinates of the 980×402 canvas).
+ * Each path starts and ends ~16px INSIDE a card, so the dot slides out from behind one card
+ * and disappears behind the next (cards are drawn on top of the dot).
+ */
+const paths = {
+  agent: "M242 79H337",
+  launch: "M545 79H672",
+  outreach: "M568 250H640V213H826V262",
+  none: "M441 101V162",
+};
+
+const data = {
+  steps: mockup.steps,
+  statusLabels: mockup.statusLabels,
+  paths,
+  classes: { glowOn, glowOff, statusTone },
+};
+---
+
+<figure data-hero-mockup data-config={JSON.stringify(data)} aria-label={mockup.label} class="relative h-full w-[1140px] overflow-hidden bg-[#fbbf24]">
+  <!-- Largest element on the page: load it first -->
+  <Image
+    src={getImage(background)}
+    alt=""
+    widths={[570, 1140, 2280]}
+    sizes="(min-width: 1280px) 1140px, 100vw"
+    loading="eager"
+    fetchpriority="high"
+    class="absolute inset-0 size-full object-cover"
+  />
+  <div class="bg-dots absolute inset-x-20 top-1/2 h-[402px] -translate-y-1/2">
+    <!-- Connector lines (on half pixels so 1px strokes are crisp) -->
+    <svg aria-hidden="true" viewBox="0 0 980 402" class="pointer-events-none absolute inset-0 size-full text-line-strong" fill="none">
+      <g stroke="currentColor" stroke-width="1">
+        <path d="M258 79.5H321"></path>
+        <path d="M441.5 117V146"></path>
+        <path d="M561 79.5H656"></path>
+        <path d="M630.5 79.5V162.5H703"></path>
+        <path d="M584 250.5H640.5V213.5H826.5V246"></path>
+      </g>
+    </svg>
+    <!-- Red dot that travels to the active card (restarted by the script on each step) -->
+    <span
+      data-dot
+      aria-hidden="true"
+      class="absolute top-0 left-0 size-[7px] rounded-full bg-brand shadow-[0_0_0_3px_rgb(255_72_32/0.2)] motion-safe:[animation:dot-travel_2s_cubic-bezier(0.45,0,0.2,1)_0.15s_both] motion-reduce:hidden"
+      style={`offset-path: path("${paths[step.highlight]}"); offset-rotate: 0deg`}
+    ></span>
+
+    <!-- Step pill -->
+    <div class={cn(card, "absolute top-[14px] left-[50px] flex w-[214px] items-center gap-2 rounded-full border-[#efefef] px-3 py-1.5")}>
+      <span class="size-1.5 rounded-full bg-brand"></span>
+      <span data-step-label class="relative inline-grid flex-1 text-[11px] leading-4 font-semibold text-ink">
+        <span class={swap}>Step 1/{mockup.steps.length} · {step.label}</span>
+      </span>
+      <span class="flex items-center gap-1" aria-hidden="true">
+        {mockup.steps.map((_, i) => <span data-step-dot class="h-1.5 rounded-full" style={`width: ${i === 0 ? 18 : 6}px; background-color: ${i <= 0 ? "#ff4820" : "#ffc7b8"}`} />)}
+      </span>
+    </div>
+
+    <!-- Client pill -->
+    <div class={cn(card, "absolute top-[63px] left-[50px] flex w-[207px] items-center gap-1.5 border-[#efefef] px-3 py-2")}>
+      <span class="text-[11px] leading-[14px] text-subtle">{mockup.client.label}</span>
+      <span class="flex-1 text-[11px] leading-[14px] font-bold text-ink">{mockup.client.name}</span>
+      <span class="text-[10px] leading-[14px] text-subtle">{mockup.client.date}</span>
+    </div>
+
+    <!-- Agent card -->
+    <div data-glow="agent" class={cn(card, glow(step.highlight === "agent"), "absolute top-10 left-[321px] flex w-60 flex-col gap-2.5 px-2.5 py-2")}>
+      <div class="flex items-center gap-2">
+        <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand text-white">
+          <Icon name="logoMark" class="h-auto w-[13.06px]" />
+        </span>
+        <div class="min-w-0">
+          <p class="text-xs leading-[14px] font-semibold text-ink">{mockup.agent.name}</p>
+          <p class="text-[11px] leading-4 text-subtle">{mockup.agent.subtitle}</p>
+        </div>
+      </div>
+      <div class="flex gap-1">{mockup.agent.tags.map((tag) => <span class={chip}>{tag}</span>)}</div>
+    </div>
+
+    <!-- Launch checklist -->
+    <div class={cn(card, "absolute top-[146px] left-[50px] flex w-[534px] flex-col gap-4 border-[#efefef] px-4 py-3.5")}>
+      <div class="flex items-center justify-between border-b border-line pb-4">
+        <p class="text-[13px] leading-4 font-bold tracking-[0.02em] text-ink">{mockup.checklistTitle}</p>
+        <span data-progress data-value={step.progress} class="text-[11px] leading-[14px] font-semibold text-subtle tabular-nums">{step.progress}%</span>
+      </div>
+      <ul class="flex flex-col gap-3">
+        {
+          mockup.rows.map((row, i) => {
+            const value = step.bars[i];
+            const status = statusOf(value);
+            return (
+              <li data-row class="flex items-center gap-3">
+                <span class="w-16 shrink-0 text-[11px] leading-[14px] font-medium text-muted">{row}</span>
+                <span class="h-[5px] flex-1 overflow-hidden rounded-full bg-[#f3f3f3]">
+                  <span data-bar class="relative block h-full overflow-hidden rounded-full bg-brand" style={`width: ${value}%`}>
+                    <!-- Green sweeps in from the left on "Live" (no muddy colour mix) -->
+                    <span data-bar-done class="absolute inset-0 origin-left bg-[#15803d]" style="transform: scaleX(0)" />
+                  </span>
+                </span>
+                <span class="flex w-[68px] shrink-0 justify-end">
+                  <span data-status class={cn("rounded-[3px] px-1.5 py-0.5 text-[10px] leading-[14px] font-semibold whitespace-nowrap transition-colors duration-700", statusTone[status])}>
+                    <span data-status-label class="relative inline-grid">
+                      <span class={swap}>{mockup.statusLabels[status]}</span>
+                    </span>
+                  </span>
+                </span>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+
+    <!-- Task: launch website -->
+    <div data-glow="launch" class={cn(card, glow(step.highlight === "launch"), "absolute top-10 left-[656px] flex w-60 flex-col gap-2.5 px-2.5 py-2")}>
+      <div>
+        <p class="text-xs leading-[14px] font-semibold text-ink">{launchTask.title}</p>
+        <p class="text-[11px] leading-4 text-subtle">{launchTask.subtitle}</p>
+      </div>
+      {"tags" in launchTask && <div class="flex gap-1">{launchTask.tags.map((tag) => <span class={chip}>{tag}</span>)}</div>}
+    </div>
+
+    <!-- "Task details" pill -->
+    <span class={cn(card, "absolute top-[148px] left-[703px] rounded-full border-[#efefef] px-2.5 py-1 text-[10px] leading-4 font-semibold text-subtle")}>
+      {mockup.detailsLabel}
+    </span>
+
+    <!-- Outreach task + status toast -->
+    <div class="absolute top-[246px] left-[723px] flex w-[206px] flex-col items-center gap-2.5">
+      <div data-glow="outreach" class={cn(card, glow(step.highlight === "outreach"), "w-full px-2.5 py-2")}>
+        <p class="text-xs leading-[14px] font-semibold text-ink">{outreachTask.title}</p>
+        <p class="text-[11px] leading-4 text-subtle">{outreachTask.subtitle}</p>
+      </div>
+      <div data-toast role="status" class="flex w-[168px] items-start gap-2 rounded-card bg-ink px-2.5 py-2 shadow-card transition-shadow duration-700">
+        <LineIcon name="sparkle" class="mt-px size-3.5 shrink-0 text-brand motion-safe:animate-spin-slow" />
+        <span data-toast-text class="relative inline-grid">
+          <span class={swap}>
+            <span class="block">
+              <span data-toast-title class="block text-xs leading-[14px] font-semibold text-white motion-safe:animate-pulse-soft">{step.toast.title}</span>
+              <span data-toast-sub class="block text-[11px] leading-4 text-white/60">{step.toast.subtitle}</span>
+            </span>
+          </span>
+        </span>
+      </div>
+    </div>
+  </div>
+</figure>
+
+<script>
+  import { animate } from "motion";
+  import { EASE_IN_OUT, loop, rollNumber, setClasses, swapText } from "@/scripts/loop";
+
+  type Step = {
+    label: string;
+    progress: number;
+    highlight: "agent" | "launch" | "outreach" | "none";
+    bars: number[];
+    toast: { title: string; subtitle: string };
+    live?: boolean;
+  };
+  type Config = {
+    steps: Step[];
+    statusLabels: Record<"todo" | "progress" | "done", string>;
+    paths: Record<Step["highlight"], string>;
+    classes: { glowOn: string; glowOff: string; statusTone: Record<string, string> };
+  };
+
+  const STEP_MS = [3400, 3400, 3400, 4200];
+  const toastLive = "shadow-[0_0_0_3px_rgb(34_160_97/0.35),0_10px_30px_-8px_rgb(34_160_97/0.6)]";
+  const statusOf = (v: number) => (v >= 100 ? "done" : v > 0 ? "progress" : "todo");
+
+  document.querySelectorAll<HTMLElement>("[data-hero-mockup]").forEach((root) => {
+    const cfg = JSON.parse(root.dataset.config!) as Config;
+    const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const $$ = <T extends Element = HTMLElement>(s: string) => [...root.querySelectorAll<T>(s)];
+    const dots = $$("[data-step-dot]");
+    const rows = $$("[data-row]");
+    const glows = $$("[data-glow]");
+    const toast = $("[data-toast]");
+    const tones = Object.values(cfg.classes.statusTone);
+
+    loop(root, STEP_MS, (index, _cycle, instant) => {
+      const step = cfg.steps[index];
+      const live = Boolean(step.live);
+      const t = (d: number) => (instant ? 0 : d);
+
+      swapText($("[data-step-label]"), step.label, `Step ${index + 1}/${cfg.steps.length} · ${step.label}`, instant);
+      dots.forEach((dot, i) =>
+        animate(dot, { width: i === index ? 18 : 6, backgroundColor: i <= index ? "#ff4820" : "#ffc7b8" }, { duration: t(0.7), ease: EASE_IN_OUT }),
+      );
+      rollNumber($("[data-progress]"), step.progress, { suffix: "%", instant });
+
+      rows.forEach((row, i) => {
+        const value = step.bars[i];
+        const status = statusOf(value);
+        animate(row.querySelector<HTMLElement>("[data-bar]")!, { width: `${value}%` }, { duration: t(1.3), ease: EASE_IN_OUT, delay: instant ? 0 : i * 0.08 });
+        animate(
+          row.querySelector<HTMLElement>("[data-bar-done]")!,
+          { scaleX: live ? 1 : 0 },
+          live ? { duration: t(0.8), ease: EASE_IN_OUT, delay: instant ? 0 : 0.25 + i * 0.1 } : { duration: 0 },
+        );
+        setClasses(row.querySelector("[data-status]")!, tones, cfg.classes.statusTone[status]);
+        swapText(row.querySelector<HTMLElement>("[data-status-label]")!, status, cfg.statusLabels[status], instant);
+      });
+
+      glows.forEach((card) => setClasses(card, [cfg.classes.glowOn, cfg.classes.glowOff], card.dataset.glow === step.highlight ? cfg.classes.glowOn : cfg.classes.glowOff));
+
+      // Restart the travelling dot on its new path.
+      const oldDot = $("[data-dot]");
+      const dot = oldDot.cloneNode() as HTMLElement;
+      dot.style.offsetPath = `path("${cfg.paths[step.highlight]}")`;
+      oldDot.replaceWith(dot);
+
+      toast.classList.toggle(toastLive.split(" ")[0], live);
+      swapText(
+        $("[data-toast-text]"),
+        step.toast.title,
+        (span) => {
+          span.innerHTML = `<span class="block"><span class="block text-xs leading-[14px] font-semibold text-white${live ? "" : " motion-safe:animate-pulse-soft"}"></span><span class="block text-[11px] leading-4 ${live ? "text-[#4ade80]" : "text-white/60"}"></span></span>`;
+          const [title, sub] = span.querySelectorAll("span > span");
+          title.textContent = step.toast.title;
+          sub.textContent = step.toast.subtitle;
+        },
+        instant,
+      );
+    });
+  });
+</script>

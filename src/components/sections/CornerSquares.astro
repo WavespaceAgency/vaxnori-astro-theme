@@ -1,0 +1,17 @@
+---
+interface Props {
+  side: "left" | "right";
+}
+/** Faint squares in the top corners of a hero (decorative). 182px on desktop, 72px on phones (as in Figma). */
+const { side } = Astro.props;
+const squares = [
+  [0, 0], [0, 66], [66, 0], [58, 58], [70, 122], [122, 70], [130, 6], [6, 130],
+];
+---
+
+<div
+  aria-hidden="true"
+  class={`pointer-events-none absolute top-12 size-[182px] scale-[0.396] lg:top-[74px] lg:scale-100 ${side === "left" ? "left-0 origin-top-left" : "right-0 origin-top-right"}`}
+>
+  {squares.map(([x, y]) => <span class="absolute size-[52px] bg-[linear-gradient(132.87deg,#fafafa_4.01%,#fff_100%)]" style={`${side}: ${x}px; top: ${y}px`} />)}
+</div>

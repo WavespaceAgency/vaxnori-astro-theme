@@ -1,0 +1,54 @@
+---
+import ScaleToFit from "@/components/motion/ScaleToFit.astro";
+import Button from "@/components/ui/Button.astro";
+import Container from "@/components/ui/Container.astro";
+import type { HomePage } from "@/config/pages/home";
+import CornerSquares from "./CornerSquares.astro";
+import HeroMockup from "./HeroMockup.astro";
+
+interface Props {
+  content: HomePage["hero"];
+}
+const { content } = Astro.props;
+---
+
+<section aria-labelledby="hero-title">
+  <Container bordered class="relative overflow-hidden">
+    <!-- Dotted band under the navbar -->
+    <div aria-hidden="true" class="bg-dots h-12 border-b border-line lg:h-[74px]"></div>
+    <CornerSquares side="left" />
+    <CornerSquares side="right" />
+
+    <div class="relative px-[21px] pt-[72px] text-center sm:px-8 lg:pt-8">
+      <div class="hero-reveal" style="--delay: 0.1s">
+        <h1
+          id="hero-title"
+          class="mx-auto max-w-[288px] font-heading-flex text-[32px] leading-10 font-medium tracking-[-0.03em] text-ink sm:max-w-[642px] sm:text-5xl sm:leading-[1.1] lg:text-display"
+        >
+          {content.title}{" "}<span class="block font-pixel-line text-accent-text">{content.accent}</span>
+        </h1>
+      </div>
+      <div class="hero-reveal" style="--delay: 0.2s">
+        <p class="mx-auto mt-4 max-w-[596px] text-sm leading-5 text-muted sm:mt-5 sm:text-lead sm:leading-[27px]">
+          {content.description}{" "}
+          <strong class="font-medium text-ink">{content.descriptionHighlight}</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-[42px] border-y border-dashed border-line-strong py-8 lg:mt-9">
+      <div class="hero-reveal flex flex-wrap justify-center gap-4 px-4" style="--delay: 0.3s">
+        <Button href={content.primaryCta.href} size="lg">{content.primaryCta.label}</Button>
+        <Button href={content.secondaryCta.href} size="lg" variant="secondary">{content.secondaryCta.label}</Button>
+      </div>
+    </div>
+
+    <div class="p-6 sm:p-8 lg:p-[50px]">
+      <div class="hero-reveal" style="--delay: 0.5s">
+        <ScaleToFit width={1140} class="aspect-[1140/648] lg:aspect-[1140/562]">
+          <HeroMockup mockup={content.mockup} background={content.background} />
+        </ScaleToFit>
+      </div>
+    </div>
+  </Container>
+</section>

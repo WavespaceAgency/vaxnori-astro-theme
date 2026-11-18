@@ -1,0 +1,139 @@
+---
+import { Image } from "astro:assets";
+import Icon from "@/components/icons/Icon.astro";
+import { siteConfig, type FooterCredit } from "@/config/site";
+import { getImage } from "@/lib/images";
+import { isExternal } from "@/lib/utils";
+import NewsletterForm from "./NewsletterForm.astro";
+
+const { footer, socials, brand } = siteConfig;
+// Optional: delete `credit` in siteConfig.footer to remove the line.
+const credit = (footer as { credit?: FooterCredit }).credit;
+const [explore, company] = footer.columns;
+const [privacy, terms] = footer.legal;
+
+const linkClass =
+  "inline-flex items-center text-sm leading-5 [overflow-wrap:anywhere] text-ink underline-offset-4 transition-colors hover:text-brand-strong hover:underline";
+const ext = (href: string) => (isExternal(href) && !href.startsWith("mailto:") ? { target: "_blank", rel: "noopener" } : {});
+const columns = [
+  { id: "footer-explore", ...explore },
+  { id: "footer-company", ...company },
+];
+---
+
+<footer class="relative isolate overflow-hidden px-4 pb-4 md:px-8 md:pb-[100px]">
+  <!-- Decorative tile background (same crop as Figma) -->
+  <Image
+    src={getImage(footer.background.mobile)}
+    alt=""
+    widths={[402, 804]}
+    sizes="100vw"
+    class="absolute top-[-2.96%] left-0 -z-10 h-[126.29%] w-full max-w-none object-cover md:hidden"
+  />
+  <Image
+    src={getImage(footer.background.desktop)}
+    alt=""
+    widths={[768, 1280, 1672]}
+    sizes="100vw"
+    class="absolute top-[-15.6%] left-0 -z-10 hidden h-[116.65%] w-full max-w-none object-cover md:block"
+  />
+
+  <div data-reveal data-y="40" class="@container relative mx-auto max-w-site overflow-hidden bg-surface p-3">
+    <div class="relative z-10 grid grid-cols-2 border border-line px-3 md:grid-cols-3 md:border-0 md:px-0 xl:grid-cols-[452fr_223fr_222fr_319fr] xl:grid-rows-[308px_auto]">
+      <!-- Tagline + newsletter -->
+      <div class="col-span-2 flex flex-col gap-8 pt-10 pb-8 md:col-span-3 md:gap-14 md:border md:border-line md:p-8 xl:col-span-1 xl:border-r-0 xl:pt-[31px] xl:pl-[37px]">
+        <p class="max-w-[307px] font-heading-flex text-h3 font-semibold text-ink">{footer.tagline}</p>
+        <NewsletterForm {...footer.newsletter} />
+      </div>
+
+      {
+        columns.map((col, i) => {
+          const nav = (
+            <nav aria-labelledby={col.id} class="p-5 xl:p-[19px]">
+              <h2 id={col.id} class="text-sm leading-5 tracking-[0.02em] text-subtle uppercase">
+                {col.title}
+              </h2>
+              <ul class="mt-5 flex flex-col gap-3 text-sm leading-5">
+                {col.links.map((link) => (
+                  <li>
+                    <a href={link.href} class={linkClass} {...ext(link.href)}>
+                      {/* Long emails wrap after the "@" instead of mid-word on small phones. */}
+                      <Fragment set:html={link.label.replace(/[&<>]/g, (c) => `&#${c.charCodeAt(0)};`).replace("@", "@<wbr>")} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          );
+          return i === 0 ? (
+            <div class="border-t border-r border-line md:border-t-0 md:border-b md:border-l xl:border-t xl:border-r-0">{nav}</div>
+          ) : (
+            <div class="flex flex-col border-t border-line md:border-t-0 md:border-r md:border-b md:border-l xl:border-t xl:border-r-0">
+              <div class="h-[214px] border-b border-line">{nav}</div>
+              <div class="flex flex-1 items-center p-4 max-[359px]:p-2 md:items-start md:px-8 md:pt-[25px]">
+                <ul class="flex w-full items-center justify-between md:w-auto md:justify-start md:gap-3">
+                  {socials.map((social) => (
+                    <li>
+                      <a
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={social.label}
+                        class="flex size-[35px] items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-ink hover:bg-canvas md:size-11"
+                      >
+                        <Icon name={social.platform} class="size-[13px] md:size-[18px]" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          );
+        })
+      }
+
+      <!-- Brand mark on a grid (heart on desktop, diamond on phones – as in Figma) -->
+      <div class="relative col-span-2 aspect-[314/303] border-t border-line md:col-span-1 md:aspect-auto md:min-h-64 md:border-t-0 md:border-r md:border-b xl:border-t">
+        <img src="/images/patterns/mark-grid.svg" alt="" class="absolute inset-0 size-full object-cover" loading="lazy" decoding="async" />
+        <img src={brand.mark} alt="" width="167" height="141" loading="lazy" decoding="async" class="absolute top-1/2 left-1/2 hidden h-auto w-[52%] max-w-[166px] -translate-1/2 md:block" />
+        <img src={brand.markAlt} alt="" width="177" height="185" loading="lazy" decoding="async" class="absolute top-1/2 left-1/2 h-auto w-[56%] -translate-1/2 md:hidden" />
+      </div>
+
+      <!-- Bottom row: copyright + credit | privacy | terms -->
+      <div class="flex flex-col items-center justify-center gap-1 border-t border-r border-line px-2 py-6 text-center md:items-start md:border-t-0 md:border-b md:border-l md:px-[19px] md:py-8 md:text-left">
+        <p class="text-sm leading-5 whitespace-nowrap text-ink">{footer.copyright}</p>
+        {
+          credit && (
+            <p class="text-xs leading-4 text-subtle">
+              {credit.prefix}{" "}
+              <a
+                href={credit.href}
+                target="_blank"
+                rel="noopener"
+                class="font-medium text-ink underline decoration-line-strong underline-offset-2 transition-colors hover:text-brand hover:decoration-brand"
+              >
+                {credit.label}
+              </a>
+            </p>
+          )
+        }
+      </div>
+      <div class="flex items-center justify-center border-t border-line px-4 py-6 md:justify-start md:border-t-0 md:border-r md:border-b md:px-[19px] md:py-8 xl:col-span-2 xl:border-r-0 xl:border-l">
+        <a href={privacy.href} class={linkClass}>{privacy.label}</a>
+      </div>
+      <div class="col-span-2 flex items-center justify-center border-t border-line p-6 md:col-span-1 md:justify-start md:border-t-0 md:border-r md:border-b md:px-[19px] md:py-8 xl:border-l">
+        <a href={terms.href} class={linkClass}>{terms.label}</a>
+      </div>
+    </div>
+
+    <!-- Giant wordmark over a faint grid. Real text from siteConfig.name at the exact Figma size (1216×207). -->
+    <div aria-hidden="true" class="relative -mx-3 -mb-3 h-[26cqw] overflow-hidden md:h-[20cqw]">
+      <img src="/images/patterns/grid.svg" alt="" class="absolute inset-0 size-full object-cover object-top" loading="lazy" decoding="async" />
+      <svg viewBox="0 0 1216 207" class="absolute top-[11cqw] left-1/2 block w-[97.3cqw] -translate-x-1/2 overflow-visible md:top-[5cqw] md:w-[calc(100cqw-24px)]">
+        <text x="0" y="204.2" textLength="1216" lengthAdjust="spacingAndGlyphs" class="fill-[#f5f5f5] font-heading-flex font-semibold" style="font-size: 276.4px">
+          {siteConfig.name}
+        </text>
+      </svg>
+    </div>
+  </div>
+</footer>

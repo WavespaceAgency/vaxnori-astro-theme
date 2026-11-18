@@ -1,0 +1,12 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { icons, type IconName } from "./icons";
+
+interface Props extends HTMLAttributes<"svg"> {
+  name: IconName;
+}
+const { name, ...attrs } = Astro.props;
+const icon = icons[name];
+---
+
+<svg viewBox={icon.viewBox} fill="none" aria-hidden="true" {...attrs} set:html={icon.body} />

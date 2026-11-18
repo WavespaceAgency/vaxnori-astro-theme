@@ -1,0 +1,138 @@
+---
+import CheckCircle from "@/components/icons/CheckCircle.astro";
+import Container from "@/components/ui/Container.astro";
+import SectionHeading from "@/components/ui/SectionHeading.astro";
+import type { HomePage } from "@/config/pages/home";
+import { cn } from "@/lib/utils";
+import ProductVisuals from "./ProductVisuals.astro";
+
+interface Props {
+  content: HomePage["product"];
+}
+/** Product section: accessible tabs (arrow keys, Home/End) with a sliding underline and animated panels. */
+const { content } = Astro.props;
+const id = "product";
+---
+
+<section aria-label={content.eyebrow}>
+  <Container bordered class="pt-14 lg:pt-[50px]">
+    <div data-reveal class="mb-6 px-6 sm:px-8 lg:mb-[50px] lg:px-[50px]">
+      <SectionHeading id="product-title" eyebrow={content.eyebrow} title={content.title} accent={content.accent} titleClass="max-w-[420px]" />
+    </div>
+
+    <div data-tabs>
+      <div class="border-y border-dashed border-line-strong">
+        <div role="tablist" aria-label="Product features" class="flex overflow-x-auto [scrollbar-width:none] sm:gap-4 sm:px-4 lg:pl-[50px]">
+          {
+            content.tabs.map((tab, index) => {
+              const selected = index === 0;
+              return (
+                <button
+                  type="button"
+                  role="tab"
+                  id={`${id}-tab-${tab.id}`}
+                  aria-selected={selected ? "true" : "false"}
+                  aria-controls={`${id}-panel-${tab.id}`}
+                  tabindex={selected ? 0 : -1}
+                  class="group relative flex-1 border-b border-transparent px-4 py-4 text-[15px] leading-6 whitespace-nowrap text-subtle transition-colors duration-300 first:pl-6 last:pr-6 hover:text-ink focus-visible:-outline-offset-4 aria-selected:text-ink sm:flex-none sm:first:pl-4 sm:last:pr-4 lg:py-5 lg:text-base"
+                >
+                  {/* Both layers share one grid cell: the hidden medium-weight copy keeps the width fixed, so nothing jumps. */}
+                  <span class="grid">
+                    <span aria-hidden="true" class="invisible col-start-1 row-start-1 font-medium">
+                      {tab.label}
+                    </span>
+                    <span class="col-start-1 row-start-1 text-center group-aria-selected:font-medium">{tab.label}</span>
+                  </span>
+                  <span data-underline aria-hidden="true" class="absolute inset-x-0 bottom-0 h-px origin-left bg-ink opacity-0 group-aria-selected:opacity-100" />
+                </button>
+              );
+            })
+          }
+        </div>
+      </div>
+
+      {
+        content.tabs.map((tab, index) => (
+          <div
+            role="tabpanel"
+            id={`${id}-panel-${tab.id}`}
+            aria-labelledby={`${id}-tab-${tab.id}`}
+            hidden={index !== 0}
+            tabindex="0"
+            class="grid items-center gap-6 px-6 pt-6 pb-14 focus-visible:-outline-offset-4 sm:px-8 lg:grid-cols-[minmax(0,421px)_minmax(0,619px)] lg:justify-between lg:gap-10 lg:px-[50px] lg:py-[100px]"
+          >
+            <div data-panel-text class="flex flex-col gap-4 lg:gap-5">
+              <div class="flex flex-col gap-2 lg:gap-3">
+                <h3 class="font-heading-flex text-h4 font-medium text-ink">{tab.title}</h3>
+                <p class="text-sm leading-[22px] text-muted lg:text-base lg:leading-6">{tab.description}</p>
+              </div>
+              <ul class="flex max-w-[278px] flex-col gap-2 sm:max-w-none">
+                {tab.points.map((point) => (
+                  <li data-panel-point class="flex items-start gap-2.5 text-sm leading-[22px] text-muted lg:text-base lg:leading-6">
+                    <CheckCircle class="mt-0.5 size-5 shrink-0 text-brand" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div
+              data-panel-visual
+              class={cn(
+                "aspect-[322/208] w-full overflow-hidden border-[0.5px] border-[#e6e6e6] bg-surface shadow-frame lg:aspect-[619/401]",
+                tab.visual.type !== "image" && "max-sm:aspect-auto max-sm:min-h-80",
+              )}
+            >
+              <ProductVisuals visual={tab.visual} />
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </Container>
+</section>
+
+<script>
+  import { animate, stagger } from "motion";
+  import { EASE, reduceMotion } from "@/scripts/motion";
+
+  document.querySelectorAll<HTMLElement>("[data-tabs]").forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = tabs.map((t) => root.querySelector<HTMLElement>(`#${t.getAttribute("aria-controls")}`)!);
+    let active = 0;
+
+    const select = (next: number, focus = false) => {
+      next = (next + tabs.length) % tabs.length;
+      if (focus) tabs[next].focus();
+      if (next === active) return;
+      const from = tabs[active].querySelector<HTMLElement>("[data-underline]")!.getBoundingClientRect();
+      tabs.forEach((tab, i) => {
+        tab.setAttribute("aria-selected", String(i === next));
+        tab.tabIndex = i === next ? 0 : -1;
+        panels[i].hidden = i !== next;
+      });
+      active = next;
+      if (reduceMotion()) return;
+
+      // Underline slides from the old tab to the new one (like Motion's layoutId).
+      const line = tabs[next].querySelector<HTMLElement>("[data-underline]")!;
+      const to = line.getBoundingClientRect();
+      animate(line, { x: [from.left - to.left, 0], scaleX: [from.width / to.width, 1] }, { type: "spring", stiffness: 400, damping: 34 });
+
+      // Panel content plays its entrance again.
+      const panel = panels[next];
+      animate(panel.querySelector("[data-panel-text]")!, { opacity: [0, 1], x: [-16, 0], filter: ["blur(4px)", "blur(0px)"] }, { duration: 0.6, ease: EASE });
+      animate(panel.querySelectorAll("[data-panel-point]"), { opacity: [0, 1], y: [8, 0] }, { duration: 0.5, ease: EASE, delay: stagger(0.08, { startDelay: 0.15 }) });
+      animate(panel.querySelector("[data-panel-visual]")!, { opacity: [0, 1], y: [24, 0], scale: [0.97, 1] }, { duration: 0.7, ease: EASE });
+    };
+
+    tabs.forEach((tab, i) => tab.addEventListener("click", () => select(i)));
+    root.querySelector('[role="tablist"]')!.addEventListener("keydown", (event) => {
+      const e = event as KeyboardEvent;
+      const keys: Record<string, number> = { ArrowRight: active + 1, ArrowLeft: active - 1, Home: 0, End: tabs.length - 1 };
+      if (e.key in keys) {
+        e.preventDefault();
+        select(keys[e.key], true);
+      }
+    });
+  });
+</script>

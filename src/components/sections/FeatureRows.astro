@@ -1,0 +1,74 @@
+---
+import { Image } from "astro:assets";
+import ScaleToFit from "@/components/motion/ScaleToFit.astro";
+import SectionHeading from "@/components/ui/SectionHeading.astro";
+import Container from "@/components/ui/Container.astro";
+import type { HomePage } from "@/config/pages/home";
+import { getImage } from "@/lib/images";
+import { cn } from "@/lib/utils";
+import FeatureMockups from "./FeatureMockups.astro";
+
+type Feature =
+  | HomePage["features"][number]
+  | { eyebrow: string; title: string; accent: string; description: string; image: { src: string; alt: string }; eyebrowLine?: boolean };
+
+interface Props {
+  content: readonly Feature[];
+  accentBreakMobile?: boolean;
+}
+/** Alternating text + image rows ("01 — Launch", "02 — Grow", ...). A row shows its animated `visual`, or its image. */
+const { content, accentBreakMobile = false } = Astro.props;
+---
+
+<section aria-label="Features">
+  <Container bordered>
+    {
+      content.map((feature, index) => {
+        const flipped = index % 2 === 1;
+        const visual = "visual" in feature ? feature.visual : undefined;
+        return (
+          <article
+            class={cn(
+              "grid items-center gap-8 border-t border-dashed border-line-strong px-6 py-14 first:border-t-0 sm:px-8 lg:gap-20 lg:px-[50px] lg:py-[100px]",
+              flipped ? "lg:grid-cols-[504fr_556fr]" : "lg:grid-cols-[556fr_504fr]",
+            )}
+          >
+            <div data-reveal class={cn("max-w-[556px]", flipped && "lg:order-2")}>
+              <SectionHeading
+                eyebrow={feature.eyebrow}
+                title={feature.title}
+                accent={feature.accent}
+                description={feature.description}
+                as="h2"
+                accentBreakMobile={accentBreakMobile}
+                eyebrowLine={"eyebrowLine" in feature ? Boolean(feature.eyebrowLine) : false}
+                descriptionClass="max-lg:leading-5"
+              />
+            </div>
+            <div
+              data-reveal="scale"
+              data-delay="0.1"
+              class={cn("w-full max-w-[504px] overflow-hidden rounded-[2px] border border-line-soft", flipped ? "lg:order-1" : "lg:justify-self-end")}
+            >
+              {visual ? (
+                <div role="img" aria-label={feature.image.alt}>
+                  <ScaleToFit width={504} height={400}>
+                    <FeatureMockups visual={visual} />
+                  </ScaleToFit>
+                </div>
+              ) : (
+                <Image
+                  src={getImage(feature.image.src)}
+                  alt={feature.image.alt}
+                  widths={[504, 1008]}
+                  sizes="(min-width: 1280px) 504px, (min-width: 1024px) 40vw, 100vw"
+                  class="h-auto w-full transition-transform duration-700 ease-out hover:scale-[1.02]"
+                />
+              )}
+            </div>
+          </article>
+        );
+      })
+    }
+  </Container>
+</section>

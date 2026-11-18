@@ -1,0 +1,39 @@
+---
+import { Image } from "astro:assets";
+import Container from "@/components/ui/Container.astro";
+import type { HomePage } from "@/config/pages/home";
+import { getImage } from "@/lib/images";
+
+interface Props {
+  content: HomePage["testimonial"];
+}
+const { content } = Astro.props;
+---
+
+<section aria-label="Customer story">
+  <Container bordered class="bg-canvas p-6 sm:px-8 lg:px-[50px] lg:py-[60px]">
+    <figure class="grid items-center gap-8 md:grid-cols-[280px_1fr] lg:gap-[138px]">
+      <div data-reveal="scale" class="relative aspect-square w-full overflow-hidden md:size-[280px]">
+        <Image src={getImage(content.background)} alt="" widths={[280, 560, 800]} sizes="(min-width: 768px) 280px, 100vw" class="absolute inset-0 size-full object-cover" />
+        <div class="absolute inset-[11.4%] overflow-hidden bg-surface">
+          <Image
+            src={getImage(content.image.src)}
+            alt={content.image.alt}
+            widths={[216, 432, 640]}
+            sizes="(min-width: 768px) 216px, 80vw"
+            class="absolute inset-0 size-full object-cover transition-transform duration-700 hover:scale-105"
+          />
+        </div>
+      </div>
+      <div data-reveal data-delay="0.15" class="flex flex-col gap-4 lg:gap-6 lg:pr-12">
+        <blockquote class="font-heading-flex text-xl leading-8 font-medium tracking-[-0.03em] text-ink lg:text-[28px] lg:leading-10">
+          <p>&quot;{content.quote}&quot;</p>
+        </blockquote>
+        <figcaption class="text-sm leading-6 lg:text-lg">
+          <span class="font-medium text-ink">{content.name},</span>{" "}
+          <span class="text-subtle">{content.role}</span>
+        </figcaption>
+      </div>
+    </figure>
+  </Container>
+</section>

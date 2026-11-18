@@ -1,0 +1,28 @@
+---
+import Icon from "@/components/icons/Icon.astro";
+import { siteConfig } from "@/config/site";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  showName?: boolean;
+  /** Use the second (diamond) mark, as on mobile in Figma. */
+  alt?: boolean;
+  size?: "xs" | "sm" | "md";
+  class?: string;
+}
+/** Brand mark in a circle, optionally with the site name. Links to the home page. */
+const { showName = false, alt = false, size = "md", class: className } = Astro.props;
+---
+
+<a href="/" class={cn("inline-flex items-center gap-2 rounded-full", className)} aria-label={`${siteConfig.name} – home`}>
+  <span class={cn("flex items-center justify-center rounded-full bg-brand text-white", { xs: "size-6", sm: "size-7", md: "size-8" }[size])}>
+    {
+      alt ? (
+        <Icon name="logoMarkAlt" class={{ xs: "h-[15px] w-auto", sm: "h-[17.5px] w-auto", md: "h-5 w-auto" }[size]} />
+      ) : (
+        <Icon name="logoMark" class={{ xs: "h-auto w-[11.52px]", sm: "h-auto w-[13.44px]", md: "h-auto w-[15.36px]" }[size]} />
+      )
+    }
+  </span>
+  {showName && <span class={cn("font-semibold text-ink", size === "xs" ? "text-sm leading-5" : "text-base leading-6")}>{siteConfig.name}</span>}
+</a>

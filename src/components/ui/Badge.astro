@@ -1,0 +1,13 @@
+---
+import { badgeBase, statusTones, type StatusTone } from "@/lib/badge";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  tone?: StatusTone;
+  class?: string;
+}
+/** Small status chip used in the product mockups ("In progress", "Done", ...). */
+const { tone = "neutral", class: className } = Astro.props;
+---
+
+<span class={cn(badgeBase, statusTones[tone], className)}><slot /></span>

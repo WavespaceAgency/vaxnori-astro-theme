@@ -1,0 +1,244 @@
+---
+import type { HomePage } from "@/config/pages/home";
+import { cn } from "@/lib/utils";
+
+type Visual = NonNullable<Extract<HomePage["features"][number], { visual: unknown }>["visual"]>;
+interface Props {
+  visual: Visual;
+}
+/**
+ * Animated mockups for the feature rows (Launch, Grow, Run), drawn at the Figma size (504×400)
+ * and looping like the live site. The HTML shows the final frame; the script plays the loop.
+ * All text lives in src/config/pages/home.ts → features[].visual.
+ */
+const { visual: v } = Astro.props;
+const card = "absolute rounded-card border border-[#efefef] bg-surface shadow-card";
+const label = "text-[10px] leading-4 tracking-[0.04em] text-subtle uppercase";
+const tones = {
+  todo: "bg-status-todo-bg text-status-todo",
+  done: "bg-status-done-bg text-status-done",
+  progress: "bg-status-progress-bg text-status-progress",
+  queued: "bg-status-queued-bg text-status-queued",
+} as const;
+const chip = "rounded-[3px] px-1.5 py-0.5 text-[9px] leading-3 font-semibold whitespace-nowrap transition-colors duration-700";
+const swap = "col-start-1 row-start-1";
+const rowWidths = [373, 336, 298, 261];
+const pad = (i: number) => String(i + 1).padStart(2, "0");
+const fmt = (value: number, decimals = 0, suffix = "") => `${value.toFixed(decimals)}${suffix}`;
+---
+
+<div data-feature-mockup={v.type} data-config={JSON.stringify({ v, tones })} class="bg-dots relative h-[400px] w-[504px]">
+  <div data-frame class="absolute inset-0">
+    {
+      v.type === "launch" && (
+        <Fragment>
+          <div class={cn(card, "top-[55px] left-20 w-[345px] px-4 py-3.5")}>
+            <p class={cn(label, "border-b border-line pb-2.5")}>{v.checklistTitle}</p>
+            <ul class="mt-3 flex flex-col gap-[9px]">
+              {v.tasks.map((task, i) => (
+                <li class="flex items-center gap-3 text-[11px] leading-[17px]">
+                  <span class="w-3.5 text-subtle">{pad(i)}</span>
+                  <span class="flex-1 font-medium text-ink">{task.label}</span>
+                  <span data-chip class={cn(chip, tones[task.tone])}>
+                    <span data-chip-label class="relative inline-grid">
+                      <span class={swap}>{task.status}</span>
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class={cn(card, "top-[224px] left-20 h-[121px] w-[345px] px-4 py-3.5")}>
+            <p class={cn(label, "border-b border-line pb-2.5")}>{v.identityTitle}</p>
+            <div class="mt-3 flex items-start justify-between">
+              <div data-brand>
+                <p class="font-heading-flex text-lg leading-6 font-semibold tracking-[-0.02em] text-ink">{v.brand}</p>
+              </div>
+              <div data-voice>
+                <p class="text-right text-[10px] leading-[14px] text-subtle">
+                  {v.voice.map((line) => (
+                    <span class="block">{line}</span>
+                  ))}
+                </p>
+              </div>
+            </div>
+            <div class="mt-3 grid grid-cols-4 gap-1">
+              {v.colors.map((color) => (
+                <span data-swatch class="h-[17px] origin-left" style={`background-color: ${color}`} />
+              ))}
+            </div>
+          </div>
+        </Fragment>
+      )
+    }
+    {
+      v.type === "grow" && (
+        <Fragment>
+          <div class="absolute top-[34px] left-[66px] flex flex-col gap-[9px]">
+            {v.funnel.map((row, i) => (
+              <div data-funnel>
+                <div class="flex h-[39px] items-center gap-3 rounded-card border border-[#efefef] bg-surface px-3.5 shadow-card" style={`width: ${rowWidths[i]}px`}>
+                  <span class="text-[13px] text-subtle">{pad(i)}</span>
+                  <span class="flex-1 text-[13px] font-medium text-ink">{row.label}</span>
+                  <span class="font-heading-italic text-[15px] font-medium text-brand-strong tabular-nums" data-num data-value={row.value}>
+                    {row.value}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div data-draft class="absolute top-[234px] left-[66px] w-[373px]">
+            <div class="rounded-card bg-ink px-4 py-4 shadow-[0_18px_40px_-16px_rgb(0_0_0/0.5)]">
+              <p class="border-b border-white/15 pb-2.5 text-[9px] leading-3 tracking-[0.04em] text-white/55 uppercase">{v.draftLabel}</p>
+              <p class="mt-3 text-[13px] leading-[17px] text-white">{v.draft}</p>
+              <div class="mt-4 grid grid-cols-2 gap-2">
+                <span class="rounded-[4px] bg-[#333] py-1.5 text-center text-[11px] text-white/80">{v.hold}</span>
+                <span data-send class="rounded-[4px] py-1.5 text-center text-[11px] font-medium text-white" style="background-color: #15803d">
+                  <span data-send-label class="relative inline-grid">
+                    <span class={swap}>{v.sent}</span>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </Fragment>
+      )
+    }
+    {
+      v.type === "run" && (
+        <Fragment>
+          <div class={cn(card, "top-[46px] left-[91px] w-[322px] px-4 py-3.5")}>
+            <div class={cn(label, "flex justify-between border-b border-line pb-2.5")}>
+              <span>{v.recurringTitle}</span>
+              <span>{v.recurringNote}</span>
+            </div>
+            <ul class="mt-3 flex flex-col gap-[9px]">
+              {v.recurring.map((row) => (
+                <li class="flex items-center gap-2.5 text-[11px] leading-[17px]">
+                  <span class="w-7 text-subtle uppercase">{row.day}</span>
+                  <span class="flex-1 font-medium text-ink">{row.label}</span>
+                  <span data-chip class={cn(chip, row.done ? tones.progress : tones.queued)}>
+                    <span data-chip-label class="relative inline-grid">
+                      <span class={swap}>{row.done ?? v.queuedLabel}</span>
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class={cn(card, "top-[164px] left-[91px] h-[188px] w-[322px] px-4 py-3.5")}>
+            <p class={cn(label, "border-b border-line pb-2.5")}>{v.digestTitle}</p>
+            <div class="mt-4 grid grid-cols-3">
+              {v.metrics.map((metric) => (
+                <div>
+                  <p class="font-heading-flex text-lg leading-5 font-medium text-ink tabular-nums" data-num data-value={metric.value}>
+                    {fmt(metric.value, metric.decimals, metric.suffix)}
+                  </p>
+                  <p class="mt-1 text-[10px] text-subtle">{metric.label}</p>
+                </div>
+              ))}
+            </div>
+            <div class="absolute inset-x-4 bottom-[15px] flex h-[66px] items-end justify-between">
+              {v.bars.map(([a, b]) => (
+                <div class="flex h-full items-end gap-[2px]">
+                  {[a, b].map((h, j) => (
+                    <span data-chart-bar class={cn("w-4 origin-bottom", j === 0 ? "bg-brand" : "bg-[#ffcf00]")} style={`height: ${h}%`} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Fragment>
+      )
+    }
+  </div>
+</div>
+
+<script>
+  import { animate } from "motion";
+  import { EASE_IN_OUT, SOFT_SPRING, loop, rollNumber, setClasses, swapText } from "@/scripts/loop";
+
+  /** Item that springs in when shown (hides instantly). */
+  const show = (el: Element, on: boolean, from: number, instant: boolean, delay = 0) =>
+    animate(el, on ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: from, scale: 0.98 }, on && !instant ? { ...SOFT_SPRING, delay } : { duration: 0 });
+
+  document.querySelectorAll<HTMLElement>("[data-feature-mockup]").forEach((root) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { v, tones } = JSON.parse(root.dataset.config!) as { v: any; tones: Record<string, string> };
+    const all = Object.values(tones);
+    const $$ = (s: string) => [...root.querySelectorAll<HTMLElement>(s)];
+    const frameEl = root.querySelector<HTMLElement>("[data-frame]")!;
+    const fade = (hidden: boolean, instant: boolean) =>
+      animate(frameEl, { opacity: hidden ? 0 : 1, filter: hidden ? "blur(2px)" : "blur(0px)" }, { duration: instant ? 0 : 0.6, ease: EASE_IN_OUT });
+
+    /* 01 — Launch: tasks get their status one by one, then the brand identity fills in */
+    if (v.type === "launch") {
+      const chips = $$("[data-chip]");
+      const labels = $$("[data-chip-label]");
+      const swatches = $$("[data-swatch]");
+      loop(root, [700, 600, 600, 600, 600, 900, 2800, 700], (phase, _c, instant) => {
+        const on = phase < 7;
+        fade(phase === 7, instant);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        v.tasks.forEach((task: any, i: number) => {
+          const done = phase >= 2 + i && on && i < 3;
+          const final = done || i === 3;
+          setClasses(chips[i], all, tones[final ? task.tone : "queued"]);
+          swapText(labels[i], String(final), final ? task.status : v.queuedLabel, instant);
+        });
+        show(root.querySelector("[data-brand]")!, phase >= 1 && on, 6, instant);
+        show(root.querySelector("[data-voice]")!, phase >= 6 && on, 4, instant);
+        swatches.forEach((s, i) =>
+          animate(s, { scaleX: phase >= 5 && on ? 1 : 0, opacity: phase >= 5 && on ? 1 : 0 }, phase >= 5 && !instant ? { duration: 0.7, ease: EASE_IN_OUT, delay: i * 0.12 } : { duration: 0 }),
+        );
+      }, 6);
+    }
+
+    /* 02 — Grow: funnel numbers count up row by row, the draft appears, Approve → Sent */
+    if (v.type === "grow") {
+      const rows = $$("[data-funnel]");
+      const send = root.querySelector<HTMLElement>("[data-send]")!;
+      loop(root, [500, 750, 750, 750, 750, 1300, 2600, 700], (phase, _c, instant) => {
+        const sent = phase === 6;
+        fade(phase === 7, instant);
+        rows.forEach((row, i) => {
+          const on = phase >= i + 1 && phase < 7;
+          show(row, on, 8, instant);
+          rollNumber(row.querySelector("[data-num]")!, on ? v.funnel[i].value : 0, { duration: on ? 0.9 : 0, instant });
+        });
+        show(root.querySelector("[data-draft]")!, phase >= 5 && phase < 7, 14, instant);
+        animate(send, { backgroundColor: sent ? "#15803d" : "#ff4820" }, { duration: instant ? 0 : 0.25, ease: "easeOut" });
+        if (sent && !instant) animate(send, { scale: [0.94, 1] }, SOFT_SPRING);
+        swapText(root.querySelector<HTMLElement>("[data-send-label]")!, String(sent), sent ? v.sent : v.approve, instant);
+      }, 6);
+    }
+
+    /* 03 — Run: a recurring task is sent, the Monday digest numbers roll up and the chart grows */
+    if (v.type === "run") {
+      const chips = $$("[data-chip]");
+      const labels = $$("[data-chip-label]");
+      const nums = $$("[data-num]");
+      const bars = $$("[data-chart-bar]");
+      loop(root, [700, 2000, 2800, 700], (phase, _c, instant) => {
+        // Values stay up while the card fades out (phase 3) and reset instantly while hidden.
+        const live = phase >= 1;
+        fade(phase === 3, instant);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        v.recurring.forEach((row: any, i: number) => {
+          const done = live && Boolean(row.done);
+          setClasses(chips[i], all, tones[done ? "progress" : "queued"]);
+          swapText(labels[i], String(done), done ? row.done : v.queuedLabel, instant);
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        v.metrics.forEach((m: any, i: number) =>
+          rollNumber(nums[i], live ? m.value : 0, { decimals: m.decimals, suffix: m.suffix, duration: live ? 1.6 : 0, instant }),
+        );
+        bars.forEach((bar, k) => {
+          const i = Math.floor(k / 2);
+          const j = k % 2;
+          animate(bar, { scaleY: live ? 1 : 0.06 }, live && !instant ? { duration: 0.9, ease: EASE_IN_OUT, delay: i * 0.09 + j * 0.04 } : { duration: 0 });
+        });
+      }, 2);
+    }
+  });
+</script>

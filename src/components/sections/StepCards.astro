@@ -1,0 +1,206 @@
+---
+import type { HomePage } from "@/config/pages/home";
+import { cn } from "@/lib/utils";
+import StepRow from "./StepRow.astro";
+
+type Card = HomePage["howItWorks"]["steps"][number]["card"];
+interface Props {
+  card: Card;
+}
+/**
+ * The three animated step cards (How it works), made to loop like a video.
+ * The HTML shows the final frame (complete without JavaScript or with reduced motion);
+ * the script below resets it and plays the loop while the card is on screen.
+ */
+const { card: c } = Astro.props;
+const card = "rounded-card border border-[#efefef] bg-surface shadow-card transition-[border-color,box-shadow] duration-700";
+const swap = "col-start-1 row-start-1";
+---
+
+<div data-step-card={c.type} data-config={JSON.stringify(c)} class="w-full max-w-[206px]">
+  {
+    c.type === "idea" && (
+      <div data-frame class="flex flex-col gap-1.5">
+        <div data-idea-box class={cn(card, "min-h-[58px] px-3 py-2.5")}>
+          <p class="text-[10px] leading-4 tracking-[0.04em] text-subtle uppercase">{c.label}</p>
+          <p class="mt-1 text-[11px] leading-4 font-medium text-ink">
+            <span data-typed>{c.text}</span>
+            <span data-caret class="ml-px inline-block h-[1.05em] w-px translate-y-[2px] bg-brand" style="opacity: 0" />
+          </p>
+        </div>
+        <p data-drafted class="flex items-center gap-2 text-[10px] leading-4 font-medium text-brand-strong">
+          <span data-line class="h-px flex-1 origin-right bg-line-strong" />
+          {c.drafted}
+          <span data-line class="h-px flex-1 origin-left bg-line-strong" />
+        </p>
+        {c.tasks.map((task) => (
+          <div data-item>
+            <StepRow icon={task.icon} label={task.label} meta={task.meta} metaClass="text-status-done" />
+          </div>
+        ))}
+      </div>
+    )
+  }
+  {
+    c.type === "approve" && (
+      <div data-frame class="relative flex flex-col items-center">
+        <div class={cn(card, "flex w-full items-start justify-between gap-2 px-3 py-2.5")}>
+          <p class="text-[11px] leading-[14px] font-semibold text-ink">{c.title}</p>
+          <span data-badge class="rounded-[3px] bg-status-done-bg px-1.5 py-0.5 text-[9px] leading-3 font-semibold whitespace-nowrap text-status-done transition-colors duration-700">
+            <span data-badge-label class="relative inline-grid">
+              <span class={swap}>{c.approvedLabel}</span>
+            </span>
+          </span>
+        </div>
+        <span aria-hidden="true" class="h-2.5 w-px bg-line-strong" />
+        <dl class={cn(card, "flex w-full flex-col gap-1.5 px-3 py-2.5")}>
+          {c.rows.map(([label, value]) => (
+            <div class="flex justify-between text-[10px] leading-4">
+              <dt class="text-subtle">{label}</dt>
+              <dd class="font-semibold text-ink">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <span aria-hidden="true" class="h-2.5 w-px bg-line-strong" />
+        <div class={cn(card, "relative flex w-full gap-2 p-2")}>
+          <span class="flex-1 rounded-[4px] bg-surface-muted py-1.5 text-center text-[10px] leading-4 font-medium text-ink">{c.hold}</span>
+          <span data-approve class="relative flex-1 overflow-hidden rounded-[4px] py-1.5 text-center text-[10px] leading-4 font-medium text-white" style="background-color: #15803d">
+            <span data-ripple aria-hidden="true" class="absolute top-1/2 left-1/2 size-6 -translate-1/2 rounded-full bg-white" style="opacity: 0" />
+            <span data-approve-label class="relative inline-grid">
+              <span class={swap}>{c.approvedLabel}</span>
+            </span>
+          </span>
+          <svg
+            data-cursor
+            aria-hidden="true"
+            viewBox="0 0 16 16"
+            class="pointer-events-none absolute top-0 left-0 size-4 drop-shadow-[0_1px_2px_rgb(0_0_0/0.3)]"
+            style="opacity: 0; transform: translate(182px, 46px)"
+          >
+            <path d="M2 1.5 13 7.4 8 8.6 5.6 13.4 2 1.5Z" fill="#000" stroke="#fff" stroke-width="1" stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
+    )
+  }
+  {
+    c.type === "activity" && (
+      <div data-frame class="relative flex flex-col gap-1.5 pl-4">
+        <span aria-hidden="true" class="absolute top-3 bottom-3 left-[3px] w-px bg-line-strong" />
+        <div class="flex items-center justify-between rounded-card bg-ink px-3 py-2.5">
+          <p class="text-[11px] leading-4 font-semibold text-white">{c.title}</p>
+          <span class="rounded-[3px] bg-[#3d3200] px-1.5 py-0.5 text-[9px] leading-3 font-semibold text-[#ffd84d]">
+            <span data-count-shipped data-value={c.items.length + 1}>{c.items.length + 1}</span> {c.shippedLabel}
+          </span>
+        </div>
+        {c.items.map((item) => (
+          <div data-item class="relative">
+            <span aria-hidden="true" class="absolute top-1/2 -left-4 size-[7px] -translate-y-1/2 rounded-full border border-line-strong bg-surface" />
+            <StepRow icon={item.icon} label={item.label} meta={item.meta} />
+          </div>
+        ))}
+        <div data-progress-row class="relative">
+          <span data-progress-dot aria-hidden="true" class="absolute top-1/2 -left-4 size-[7px] -translate-y-1/2 rounded-full border border-status-done bg-status-done-bg transition-colors duration-700" />
+          <StepRow icon={c.progress.icon} metaClass="font-semibold text-status-done transition-colors duration-700" metaAttrs={{ "data-progress-meta": "" }}>
+            <span slot="label" data-progress-label class="relative inline-grid">
+              <span class={swap}>{c.progress.liveLabel}</span>
+            </span>
+            <span slot="meta" data-progress-value data-value="100">100%</span>
+            <span class="h-1 overflow-hidden rounded-full bg-[#f3f3f3]">
+              <span data-bar class="relative block h-full overflow-hidden rounded-full bg-brand" style="width: 100%">
+                <span data-bar-done class="absolute inset-0 origin-left bg-[#15803d]" />
+              </span>
+            </span>
+          </StepRow>
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<script>
+  import { animate } from "motion";
+  import { EASE_IN_OUT, SOFT_SPRING, appear, frame, loop, rollNumber, setClasses, swapText, typeText } from "@/scripts/loop";
+
+  const glow = "border-brand shadow-[0_0_0_3px_rgb(255_72_32/0.12)]";
+  const done = "bg-status-done-bg text-status-done";
+  const progress = "bg-status-progress-bg text-status-progress";
+  const dotLive = "border-status-done bg-status-done-bg";
+  const dotBusy = "border-brand bg-brand-soft motion-safe:animate-pulse-soft";
+
+  document.querySelectorAll<HTMLElement>("[data-step-card]").forEach((root) => {
+    const c = JSON.parse(root.dataset.config!);
+    const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const items = [...root.querySelectorAll<HTMLElement>("[data-item]")];
+    const frameEl = $("[data-frame]");
+
+    /* 1 ─ Describe the idea: typing → "12 tasks drafted" → tasks slide in → hold → fade out */
+    if (root.dataset.stepCard === "idea") {
+      const box = $("[data-idea-box]");
+      const lines = root.querySelectorAll("[data-line]");
+      loop(root, [2100, 600, 1500, 2800, 700], (phase, _cycle, instant) => {
+        const t = (d: number) => (instant ? 0 : d);
+        frame(frameEl, phase === 4, instant);
+        box.classList.toggle(glow.split(" ")[0], phase === 0);
+        box.classList.toggle(glow.split(" ")[1], phase === 0);
+        if (phase === 0) typeText($("[data-typed]"), $("[data-caret]"), c.text, { duration: 1.7, instant, empty: instant });
+        else if (instant) typeText($("[data-typed]"), $("[data-caret]"), c.text, { instant });
+        animate($("[data-drafted]"), { opacity: phase >= 1 && phase < 4 ? 1 : 0 }, { duration: t(0.5), ease: EASE_IN_OUT });
+        animate(lines, { scaleX: phase >= 1 ? 1 : 0 }, { duration: t(0.7), ease: EASE_IN_OUT });
+        items.forEach((item, i) => appear(item, phase >= 2 && phase < 4, i * 0.22, instant));
+      }, 3);
+    }
+
+    /* 2 ─ Approve the plan: cursor glides in → press → Approved → cursor drifts away → fade out */
+    if (root.dataset.stepCard === "approve") {
+      const cursorAt = [
+        { x: 30, y: 74, opacity: 0, scale: 1 },
+        { x: 150, y: 18, opacity: 1, scale: 1 },
+        { x: 150, y: 18, opacity: 1, scale: 0.82 },
+        { x: 182, y: 46, opacity: 0, scale: 1 },
+        { x: 30, y: 74, opacity: 0, scale: 1 },
+      ];
+      loop(root, [1300, 1100, 450, 2700, 700], (phase, _cycle, instant) => {
+        const approved = phase >= 2 && phase < 4;
+        frame(frameEl, phase === 4, instant);
+        setClasses($("[data-badge]"), [done, progress], approved ? done : progress);
+        swapText($("[data-badge-label]"), String(approved), approved ? c.approvedLabel : c.status, instant);
+        const button = $("[data-approve]");
+        animate(button, { backgroundColor: approved ? "#15803d" : "#ff4820" }, { duration: instant ? 0 : 0.25, ease: "easeOut" });
+        animate(button, { scale: phase === 2 ? 0.95 : 1 }, instant ? { duration: 0 } : SOFT_SPRING);
+        swapText($("[data-approve-label]"), String(approved), approved ? c.approvedLabel : c.approve, instant);
+        if (phase === 2 && !instant) animate($("[data-ripple]"), { scale: [0, 3.2], opacity: [0.45, 0] }, { duration: 0.7, ease: "easeOut" });
+        animate($("[data-cursor]"), cursorAt[phase], {
+          duration: instant ? 0 : phase === 1 ? 1 : phase === 2 ? 0.18 : 0.8,
+          ease: EASE_IN_OUT,
+          delay: phase === 3 && !instant ? 0.35 : 0,
+        });
+      }, 3);
+    }
+
+    /* 3 ─ Watch it ship: items ship one by one, counter rolls, website goes live → fade out */
+    if (root.dataset.stepCard === "activity") {
+      const n = c.items.length;
+      loop(root, [600, 750, 750, 750, 1700, 2700, 700], (phase, _cycle, instant) => {
+        const shown = Math.min(phase, n);
+        const showProgress = phase >= 4 && phase < 6;
+        const live = phase === 5;
+        const count = phase === 6 ? n + 1 : shown + (live ? 1 : 0);
+        const value = phase < 4 ? 0 : live ? 100 : c.progress.value;
+        frame(frameEl, phase === 6, instant);
+        // Numbers reset invisibly while the card is faded out.
+        rollNumber($("[data-count-shipped]"), count, { instant: instant || phase === 0 });
+        items.forEach((item, i) => appear(item, shown > i && phase < 6, 0, instant));
+        appear($("[data-progress-row]"), showProgress, 0, instant);
+        setClasses($("[data-progress-dot]"), [dotLive, dotBusy], live ? dotLive : dotBusy);
+        swapText($("[data-progress-label]"), String(live), live ? c.progress.liveLabel : c.progress.label, instant);
+        const meta = $("[data-progress-meta]");
+        meta.classList.toggle("text-status-done", live);
+        meta.classList.toggle("text-brand-strong", !live);
+        rollNumber($("[data-progress-value]"), value, { suffix: "%", instant: instant || phase < 4 });
+        animate($("[data-bar]"), { width: `${value}%` }, { duration: instant || phase < 4 ? 0 : 1.3, ease: EASE_IN_OUT });
+        animate($("[data-bar-done]"), { scaleX: live ? 1 : 0 }, live && !instant ? { duration: 0.8, ease: EASE_IN_OUT, delay: 0.5 } : { duration: 0 });
+      }, 5);
+    }
+  });
+</script>

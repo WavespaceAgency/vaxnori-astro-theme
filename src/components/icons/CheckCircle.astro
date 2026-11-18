@@ -1,0 +1,10 @@
+---
+import type { HTMLAttributes } from "astro/types";
+/** Orange circled check used in feature lists. */
+type Props = HTMLAttributes<"svg">;
+---
+
+<svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...Astro.props}>
+  <circle cx="10" cy="10" r="8.25" stroke="currentColor" stroke-width="1.5"></circle>
+  <path d="m6.5 10.2 2.3 2.3 4.7-4.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>

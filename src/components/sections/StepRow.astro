@@ -1,0 +1,33 @@
+---
+import LineIcon from "@/components/icons/LineIcon.astro";
+import type { LineIconName } from "@/components/icons/line-icons";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  icon: LineIconName;
+  /** Plain label; or use the "label" slot for richer content. */
+  label?: string;
+  meta?: string;
+  metaClass?: string;
+  /** Extra attributes for the meta span (for scripts). */
+  metaAttrs?: Record<string, string>;
+}
+/** One small row card inside the How-it-works mockups. Default slot = content under the row (e.g. a bar). */
+const { icon, label, meta, metaClass, metaAttrs = {} } = Astro.props;
+const hasMeta = meta !== undefined || Astro.slots.has("meta");
+---
+
+<div class="flex flex-col gap-1.5 rounded-card border border-[#efefef] bg-surface px-2.5 py-[7px] shadow-card transition-[border-color,box-shadow] duration-700">
+  <div class="flex items-center gap-2">
+    <LineIcon name={icon} class="size-3.5 text-muted" />
+    <span class="flex-1 text-[10px] leading-[14px] font-medium text-ink"><slot name="label">{label}</slot></span>
+    {
+      hasMeta && (
+        <span class={cn("text-[9px] leading-[14px]", metaClass ?? "text-subtle")} {...metaAttrs}>
+          <slot name="meta">{meta}</slot>
+        </span>
+      )
+    }
+  </div>
+  <slot />
+</div>

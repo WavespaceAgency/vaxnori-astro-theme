@@ -1,25 +1,36 @@
 ---
+import JsonLd from "@/components/JsonLd.astro";
+import CtaBanner from "@/components/sections/CtaBanner.astro";
+import Faq from "@/components/sections/Faq.astro";
+import FeatureRows from "@/components/sections/FeatureRows.astro";
+import Hero from "@/components/sections/Hero.astro";
+import HowItWorks from "@/components/sections/HowItWorks.astro";
+import Integrations from "@/components/sections/Integrations.astro";
+import LogoStrip from "@/components/sections/LogoStrip.astro";
+import Product from "@/components/sections/Product.astro";
+import Stats from "@/components/sections/Stats.astro";
+import Testimonial from "@/components/sections/Testimonial.astro";
+import { homePage } from "@/config/pages/home";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { Image } from "astro:assets";
-import { getImage } from "@/lib/images";
-import { lineIconPaths } from "@/components/icons/line-icons";
-import { siteConfig } from "@/config/site";
-const hero = getImage("/images/home/feature-launch.webp");
+
+// The home FAQ answers are visible on the page, so FAQPage data is allowed here.
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: homePage.faq.items.map((i) => ({ "@type": "Question", name: i.question, acceptedAnswer: { "@type": "Answer", text: i.answer } })),
+};
 ---
 
-<BaseLayout>
-  <!-- Phase 2 foundation check. Replaced by the real Home page in the next phase. -->
-  <section class="mx-auto max-w-site px-5 py-24">
-    <p class="font-semibold text-brand">{siteConfig.name}</p>
-    <h1 class="mt-4 font-heading text-display font-medium">
-      From one sentence to a <span class="font-pixel-line text-accent-text">running company.</span>
-    </h1>
-    <p class="mt-4 max-w-xl text-lead text-muted">{siteConfig.description}</p>
-    <div class="mt-6 flex gap-3 text-brand">
-      {Object.entries(lineIconPaths).slice(0, 8).map(([, p]) => (
-        <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={p} />
-      ))}
-    </div>
-    <Image src={hero} alt="" widths={[504, 1008]} sizes="504px" class="mt-8 rounded-card shadow-card" />
-  </section>
+<BaseLayout title={homePage.meta.title} description={homePage.meta.description}>
+  <JsonLd slot="head" data={faqJsonLd} />
+  <Hero content={homePage.hero} />
+  <LogoStrip content={homePage.logos} />
+  <Product content={homePage.product} />
+  <Stats content={homePage.stats} />
+  <HowItWorks content={homePage.howItWorks} />
+  <Testimonial content={homePage.testimonial} />
+  <FeatureRows content={homePage.features} />
+  <CtaBanner content={homePage.cta} mobileSplit />
+  <Integrations content={homePage.integrations} />
+  <Faq content={homePage.faq} />
 </BaseLayout>

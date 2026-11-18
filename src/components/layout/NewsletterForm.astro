@@ -1,0 +1,85 @@
+---
+import { buttonClasses } from "@/lib/button";
+
+interface Props {
+  label: string;
+  placeholder: string;
+  button: string;
+  success: string;
+}
+/**
+ * Newsletter sign-up. Checks the email in the browser and shows the success text.
+ * TODO: send the email to your provider (Buttondown, ConvertKit, Mailchimp, a form service …)
+ * in the `subscribe()` function in the script below.
+ */
+const { label, placeholder, button, success } = Astro.props;
+---
+
+<form data-newsletter data-success={success} novalidate class="relative flex w-full flex-col gap-2">
+  <label for="newsletter-email" class="text-sm leading-5 text-subtle max-md:sr-only">{label}</label>
+  <div
+    data-field
+    class="flex items-center gap-2 rounded-field border border-line bg-surface py-1 pr-1 pl-4 transition-[border-color,box-shadow] focus-within:border-ink focus-within:ring-2 focus-within:ring-brand-strong/30 data-[error]:border-brand-strong"
+  >
+    <input
+      id="newsletter-email"
+      name="email"
+      type="email"
+      autocomplete="email"
+      inputmode="email"
+      spellcheck="false"
+      required
+      placeholder={placeholder}
+      aria-describedby="newsletter-status"
+      class="min-w-0 flex-1 bg-transparent text-sm leading-5 text-ink placeholder:text-subtle focus-visible:outline-none"
+    />
+    <button type="submit" data-label={button} class={buttonClasses({ className: "min-h-10" })}>{button}</button>
+  </div>
+  <p id="newsletter-status" aria-live="polite" class="absolute top-full left-0 mt-1 text-xs leading-4 text-muted data-[error]:text-brand-strong"></p>
+</form>
+
+<script>
+  /** TODO: connect your newsletter provider here. Throw an error to show a failure message. */
+  async function subscribe(email: string) {
+    console.info("[newsletter] TODO: send to your provider:", email);
+  }
+
+  document.querySelectorAll<HTMLFormElement>("[data-newsletter]").forEach((form) => {
+    const input = form.querySelector<HTMLInputElement>("input")!;
+    const field = form.querySelector<HTMLElement>("[data-field]")!;
+    const status = form.querySelector<HTMLElement>("[aria-live]")!;
+    const submit = form.querySelector<HTMLButtonElement>("button[type=submit]")!;
+
+    const setError = (message?: string) => {
+      field.toggleAttribute("data-error", Boolean(message));
+      status.toggleAttribute("data-error", Boolean(message));
+      if (message) input.setAttribute("aria-invalid", "true");
+      else input.removeAttribute("aria-invalid");
+      status.textContent = message ?? "";
+    };
+
+    input.addEventListener("input", () => field.hasAttribute("data-error") && setError());
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!input.value || !input.validity.valid) {
+        setError("Please enter a valid email address.");
+        input.focus();
+        return;
+      }
+      setError();
+      submit.disabled = true;
+      submit.textContent = "Sending…";
+      try {
+        await subscribe(input.value.trim());
+        status.textContent = form.dataset.success ?? "";
+        form.reset();
+      } catch {
+        setError("Something went wrong. Please try again.");
+      } finally {
+        submit.disabled = false;
+        submit.textContent = submit.dataset.label ?? "";
+      }
+    });
+  });
+</script>
