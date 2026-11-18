@@ -1,0 +1,116 @@
+---
+import { Image } from "astro:assets";
+import ContactForm from "@/components/contact/ContactForm.astro";
+import LineIcon from "@/components/icons/LineIcon.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import Container from "@/components/ui/Container.astro";
+import SectionHeading from "@/components/ui/SectionHeading.astro";
+import { contactPage } from "@/config/pages/contact";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getImage } from "@/lib/images";
+
+const { channels, docs, form, locations } = contactPage;
+---
+
+<BaseLayout {...contactPage.meta}>
+  <PageHero {...contactPage.hero} class="pb-[30px]" />
+
+  <!-- Ways to reach us -->
+  <section aria-label="Ways to reach us">
+    <Container bordered class="border-t border-dashed border-t-line-strong">
+      <ul data-stagger data-gap="0.08" class="grid sm:grid-cols-2 lg:grid-cols-4">
+        {
+          channels.map((c) => (
+            <li
+              data-stagger-item
+              class="group flex flex-col gap-6 border-b border-dashed border-line-strong px-6 py-8 sm:border-r lg:min-h-[356px] lg:justify-between lg:gap-8 lg:border-b-0 lg:px-8 lg:py-10 lg:last:border-r-0"
+            >
+              <LineIcon name={c.icon} class="size-8 text-ink" />
+              <div class="flex flex-col gap-2">
+                <h2 class="font-heading-flex text-h4 font-medium text-ink">{c.title}</h2>
+                <p class="text-[15px] leading-5 text-muted">{c.description}</p>
+                <a href={c.link.href} class="mt-3 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-brand-strong">
+                  {c.link.label}
+                  <LineIcon name="arrowRight" class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </a>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </Container>
+  </section>
+
+  <!-- Docs + office card | form -->
+  <section aria-labelledby="form-title">
+    <Container bordered class="grid border-t border-dashed border-t-line-strong lg:grid-cols-2">
+      <div class="flex flex-col gap-10 px-6 py-14 sm:px-8 lg:px-[49px] lg:py-12">
+        <div data-reveal>
+          <SectionHeading eyebrow={docs.eyebrow} title={docs.title} accent={docs.accent} description={docs.description} titleClass="max-w-[300px] lg:max-w-[440px]" accentBreak />
+        </div>
+        <div data-reveal="scale" data-delay="0.1" class="relative overflow-hidden border border-line bg-canvas p-4 pt-16 lg:-mx-[49px] lg:border-0 lg:bg-transparent lg:px-[49px] lg:pt-20 lg:pb-2">
+          <Image src={getImage(docs.office.map)} alt="" widths={[300, 600, 822]} sizes="300px" class="pointer-events-none absolute top-0 right-0 h-auto w-[62%] max-w-[360px]" />
+          <p class="relative flex items-center gap-3 text-lg font-semibold text-ink">
+            <span aria-hidden="true">{docs.office.flag}</span>
+            {docs.office.place}
+          </p>
+          <dl class="relative mt-8 flex flex-col gap-6">
+            {
+              docs.office.rows.map((r) => (
+                <div>
+                  <dt class="text-base font-medium text-ink">{r.label}</dt>
+                  <dd class="mt-1 text-sm text-muted">{r.value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </div>
+      </div>
+      <div class="border-dashed border-line-strong px-6 pb-14 sm:px-8 lg:border-l lg:px-[41px] lg:py-12">
+        <div data-reveal class="mb-8">
+          <h2 id="form-title" class="font-heading-flex text-2xl leading-7 font-medium tracking-[-0.03em] text-ink lg:text-h3 lg:leading-[38px]">
+            {form.title}{" "}<span class="block font-pixel-line text-accent-text">{form.accent}</span>
+          </h2>
+        </div>
+        <div data-reveal data-delay="0.1">
+          <ContactForm labels={form} />
+        </div>
+      </div>
+    </Container>
+  </section>
+
+  <!-- Locations -->
+  <section aria-labelledby="locations-title">
+    <Container bordered class="border-t border-dashed border-t-line-strong pt-14 pb-14 lg:pt-[100px] lg:pb-[100px]">
+      <div data-reveal class="px-6 sm:px-8 lg:px-[50px]">
+        <SectionHeading id="locations-title" eyebrow={locations.eyebrow} title={locations.title} accent={locations.accent} titleClass="max-w-[300px] lg:max-w-[440px]" accentBreak />
+      </div>
+      <div class="relative mt-8 lg:mt-12">
+        <span aria-hidden="true" class="absolute inset-x-0 top-[50px] hidden border-t border-dashed border-line-strong md:block"></span>
+        <ul data-stagger data-gap="0.12" class="relative grid px-6 md:grid-cols-3 md:px-4 lg:px-[50px]">
+          {
+            locations.items.map((l) => (
+              <li data-stagger-item class="flex flex-col border-dashed border-line-strong max-md:border-x max-md:not-last:border-b md:border-r md:border-line-strong md:first:border-l">
+                <p class="flex h-10 items-center px-4 font-heading-italic text-[15px] font-medium text-brand-strong md:h-[50px] md:px-5">{l.label}</p>
+                <div class="flex flex-col gap-6 border-t border-dashed border-line-strong p-4 md:border-0 md:p-5">
+                  <div class="bg-dots overflow-hidden p-4 lg:p-5">
+                    <Image src={getImage(l.image)} alt={l.alt} widths={[282, 564, 846]} sizes="(min-width: 1024px) 282px, 90vw" class="h-auto w-full transition-transform duration-700 hover:scale-[1.03]" />
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <h3 class="font-heading-flex text-h4 font-medium text-ink">{l.city}</h3>
+                    {l.rows.map((r) => (
+                      <p class="flex items-center gap-2 text-sm text-muted">
+                        <LineIcon name={r.icon} class="size-4 shrink-0" />
+                        {r.text}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </Container>
+  </section>
+</BaseLayout>

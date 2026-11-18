@@ -14,3 +14,11 @@ export function isActivePath(pathname: string, href: string) {
   if (href === "/") return path === "/";
   return path === href || path.startsWith(`${href}/`);
 }
+
+/** "Control & Trust" → "control-trust" (ids for anchors). */
+export function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}

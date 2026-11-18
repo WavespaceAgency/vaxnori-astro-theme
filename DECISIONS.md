@@ -80,3 +80,15 @@ This file lists only what is new or different in the Astro version. It moves int
   height on desktop (`lg:bottom-auto` cancelled the full-height line), so it was invisible. Now a 1px black line
   marks the active tab, as intended. → Apply the same one-class fix to the Next.js repo
   (`src/components/careers/values-scroller.tsx`: remove `lg:bottom-auto`).
+
+## Phase 6 – Contact, FAQ, Privacy, Terms, 404, RSS
+- Pixel check vs the live Next.js demo (production build), identical heights:
+  Contact 0.08% / 0.31%, FAQ 0.00% / 0.00%, Privacy 0.08% / 0.09%, Terms 0.09% / 0.04%. 404 page: same height, HTTP 404.
+- **Forms without a server:** the contact form and newsletter check fields in the browser and call a `send()` /
+  `subscribe()` function with a clear `TODO` (the Next.js version used Server Actions that only logged).
+  The theme stays fully static – connect a form service or your own API in those functions.
+- **Legal pages** render `src/content/legal/*.mdx` through one `LegalPage` component (sticky contents list from Astro headings).
+- **FAQ topics** use ids from the group labels (`getting-started`, `control-trust`, `after-launch`). FAQPage JSON-LD (answers are visible).
+- **RSS** at `/rss.xml` (`@astrojs/rss`), linked in every page `<head>`. Sitemap has 24 URLs (404 excluded automatically).
+- **Full crawl:** 24 pages × 320 / 402 / 768 / 1440 → no console errors, no sideways scroll, one h1 per page,
+  all 24 internal links return 200.
