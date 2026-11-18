@@ -1,0 +1,6 @@
+---
+const { href = "" } = Astro.props;
+const external = !href.startsWith("/") && !href.startsWith("#");
+---
+
+<a href={href} class="font-medium text-brand-strong underline underline-offset-4" {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}><slot /></a>

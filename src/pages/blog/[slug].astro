@@ -1,0 +1,154 @@
+---
+import { Image, getImage } from "astro:assets";
+import { render } from "astro:content";
+import PostCard from "@/components/blog/PostCard.astro";
+import TableOfContents from "@/components/blog/TableOfContents.astro";
+import Icon from "@/components/icons/Icon.astro";
+import LineIcon from "@/components/icons/LineIcon.astro";
+import JsonLd from "@/components/JsonLd.astro";
+import { mdxComponents } from "@/components/mdx";
+import CornerSquares from "@/components/sections/CornerSquares.astro";
+import Container from "@/components/ui/Container.astro";
+import { blogPage } from "@/config/pages/blog";
+import { siteConfig } from "@/config/site";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getPosts, type Post } from "@/lib/content";
+import { absoluteUrl } from "@/lib/seo";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post, posts } }));
+}
+
+interface Props {
+  post: Post;
+  posts: Post[];
+}
+const { post, posts } = Astro.props;
+const meta = post.data;
+const { Content, headings } = await render(post);
+const toc = headings.filter((h) => h.depth === 2);
+const related = posts.filter((p) => p.id !== post.id).slice(0, 2);
+
+// Share image: the post image cropped to 1200×630.
+const share = await getImage({ src: meta.image, width: 1200, height: 630, fit: "cover", format: "jpg" });
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: meta.title,
+  description: meta.excerpt,
+  datePublished: meta.date,
+  image: absoluteUrl(share.src),
+  author: { "@type": "Person", name: meta.author.name },
+  publisher: { "@type": "Organization", name: siteConfig.name },
+  mainEntityOfPage: absoluteUrl(`/blog/${post.id}`),
+};
+---
+
+<BaseLayout title={meta.title} description={meta.excerpt} type="article" image={share.src}>
+  <JsonLd slot="head" data={jsonLd} />
+  <article>
+    <!-- Header -->
+    <Container bordered class="relative overflow-hidden">
+      <div aria-hidden="true" class="bg-dots h-12 border-b border-line lg:h-[74px]"></div>
+      <CornerSquares side="left" />
+      <CornerSquares side="right" />
+      <div class="relative px-6 pt-[72px] text-center sm:px-8 lg:pt-8">
+        <div class="hero-reveal" style="--delay: 0.1s">
+          <nav aria-label="Breadcrumb" class="flex justify-center gap-2 text-xs tracking-[0.02em] text-subtle uppercase lg:text-sm">
+            <a href="/blog" class="hover:text-ink">{blogPage.post.breadcrumb}</a>
+            <span aria-hidden="true">/</span>
+            <span class="text-brand-strong" aria-current="page">{meta.category}</span>
+          </nav>
+        </div>
+        <div class="hero-reveal" style="--delay: 0.2s">
+          <h1 class="mx-auto mt-3 max-w-[786px] font-heading-flex text-[32px] leading-10 font-medium tracking-[-0.03em] text-ink sm:text-5xl sm:leading-[1.1] lg:text-display">
+            {meta.shortTitle ?? meta.title}{" "}{meta.accent && <span class="block font-pixel-line text-accent-text">{meta.accent}</span>}
+          </h1>
+        </div>
+      </div>
+      <div class="hero-reveal mt-9 border-y border-dashed border-line-strong py-8" style="--delay: 0.3s">
+        <div class="flex items-center justify-center gap-3.5">
+          <Image src={meta.author.avatar} alt="" widths={[48, 96]} sizes="48px" class="size-12 rounded-full object-cover" />
+          <div class="text-left">
+            <p class="text-lg leading-6 font-semibold text-ink">{meta.author.name}</p>
+            <p class="text-sm text-subtle"><time datetime={meta.date}>{formatDate(meta.date)}</time> • {meta.readingTime.replace(" read", "")}</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-dots p-4 sm:p-6 lg:p-9">
+        <div class="hero-reveal" style="--delay: 0.4s">
+          <Image
+            src={meta.image}
+            alt={meta.imageAlt}
+            widths={[402, 804, 1160, 2320]}
+            sizes="(min-width: 1280px) 1160px, 100vw"
+            quality={90}
+            loading="eager"
+            fetchpriority="high"
+            class="h-auto w-full"
+          />
+        </div>
+      </div>
+    </Container>
+
+    <!-- Body + sidebar -->
+    <Container bordered class="grid border-t border-dashed border-t-line-strong lg:grid-cols-[minmax(0,806fr)_minmax(0,434fr)]">
+      <div class="px-6 py-10 sm:px-8 lg:border-r lg:border-dashed lg:border-line-strong lg:px-10 lg:py-10">
+        <div class="max-w-[724px]">
+          <Content components={mdxComponents} />
+        </div>
+
+        {
+          related.length > 0 && (
+            <section aria-labelledby="related-title" class="mt-16 max-w-[724px]">
+              <div class="mb-6 flex items-center justify-between">
+                <h2 id="related-title" class="font-heading-flex text-2xl font-medium tracking-[-0.03em] text-ink lg:text-[32px]">
+                  {blogPage.post.keepReading}
+                </h2>
+                <a href="/blog" class="group inline-flex items-center gap-1.5 text-sm font-medium text-brand-strong">
+                  {blogPage.post.allPosts}
+                  <LineIcon name="arrowRight" class="size-4 transition-transform group-hover:translate-x-1" />
+                </a>
+              </div>
+              <ul class="grid gap-6 sm:grid-cols-2">
+                {related.map((p) => (
+                  <li>
+                    <PostCard post={p} readMore={blogPage.list.readMore} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+      </div>
+
+      <aside class="hidden px-12 py-10 lg:block">
+        <div class="sticky top-24 flex flex-col gap-10">
+          <TableOfContents title={blogPage.post.onThisPage} headings={toc} />
+          <div>
+            <p class="sr-only">{blogPage.post.share}</p>
+            <ul class="flex gap-3">
+              {
+                siteConfig.socials.map((social) => (
+                  <li>
+                    <a
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.label}
+                      class="flex size-11 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-ink hover:bg-canvas"
+                    >
+                      <Icon name={social.platform} class="size-4" />
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </Container>
+  </article>
+</BaseLayout>

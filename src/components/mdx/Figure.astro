@@ -1,0 +1,16 @@
+---
+import { Image } from "astro:assets";
+import { getImage } from "@/lib/images";
+
+interface Props {
+  /** Path in src/assets, e.g. "/images/blog/my-image.webp". */
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+}
+/** Image inside a post: <Figure src="/images/blog/…" alt="…" /> */
+const { src, alt } = Astro.props;
+---
+
+<Image src={getImage(src)} alt={alt} widths={[724, 1448]} sizes="(min-width: 1024px) 724px, 100vw" class="my-8 h-auto w-full border border-line" />

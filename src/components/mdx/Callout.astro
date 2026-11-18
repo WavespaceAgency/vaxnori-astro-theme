@@ -1,0 +1,12 @@
+---
+interface Props {
+  title: string;
+}
+/** Highlighted box (job posts: "Nice to have"). */
+const { title } = Astro.props;
+---
+
+<div class="my-8 rounded-card border border-line bg-canvas px-6 py-5">
+  <p class="font-heading-italic text-lg font-medium text-brand-strong uppercase">{title}</p>
+  <div class="mt-2 [&>p]:m-0 [&>p]:font-heading-flex [&>p]:text-lg [&>p]:leading-7 [&>p]:text-muted [&>p]:italic"><slot /></div>
+</div>

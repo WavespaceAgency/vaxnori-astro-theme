@@ -116,7 +116,7 @@ const id = "product";
       // Underline slides from the old tab to the new one (like Motion's layoutId).
       const line = tabs[next].querySelector<HTMLElement>("[data-underline]")!;
       const to = line.getBoundingClientRect();
-      animate(line, { x: [from.left - to.left, 0], scaleX: [from.width / to.width, 1] }, { type: "spring", stiffness: 400, damping: 34 });
+      animate(line, { x: [from.left - to.left, 0], scaleX: [to.width > 0 && from.width > 0 ? from.width / to.width : 1, 1] }, { type: "spring", stiffness: 400, damping: 34 });
 
       // Panel content plays its entrance again.
       const panel = panels[next];

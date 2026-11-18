@@ -61,3 +61,22 @@ This file lists only what is new or different in the Astro version. It moves int
 - **Video dialog** uses the native `<dialog>` (focus stays inside, Esc closes, backdrop click closes).
   The video file / YouTube / Vimeo URL loads only when the dialog opens (no third-party requests before).
 - **Billing switch** is a radiogroup (click or arrow keys); the orange pill slides and prices roll like the Next.js version.
+
+## Phase 5 – Blog and Careers
+- **Content collections** replace the Next.js MDX loader: `getPosts()` / `getJobs()` in `src/lib/content.ts`.
+  The file name is the URL. 8 posts + 6 jobs are prerendered (20 pages in total so far).
+- **MDX styles** live in `src/components/mdx/` (one small component per element) and are passed with
+  `<Content components={mdxComponents} />`. Custom tags in MDX: `<Figure>`, `<Callout>`, `<Timeline>`.
+- **Heading ids** come from Astro (github-slugger), e.g. `#day-one-name-and-paperwork`. The "On this page" list
+  uses Astro's `headings` from `render()`, so ids always match.
+- **Blog list:** every card is in the HTML (SEO, works without JS); the script filters by category and pages
+  6 at a time ("Load older posts"). Same animations as the Next.js version.
+- **Share image per post:** the post image cropped to 1200×630 JPG at build time (replaces the Next.js
+  generated OG image with the title text).
+- Pixel check vs the live Next.js demo (production build), identical heights (±1px from image rounding):
+  Blog 0.05% / 0.18%, posts 0.04–1.33% / 0.17–0.38%, Careers 0.12% / 0.48%, job pages 0.65% / 0.90%
+  (the job-page difference is photo re-encoding only).
+- **Bug fixed (also present in the Next.js demo):** the active marker of the Careers "How we work" tabs had 0px
+  height on desktop (`lg:bottom-auto` cancelled the full-height line), so it was invisible. Now a 1px black line
+  marks the active tab, as intended. → Apply the same one-class fix to the Next.js repo
+  (`src/components/careers/values-scroller.tsx`: remove `lg:bottom-auto`).

@@ -1,0 +1,125 @@
+---
+import ScaleToFit from "@/components/motion/ScaleToFit.astro";
+import FeatureMockups from "@/components/sections/FeatureMockups.astro";
+import Eyebrow from "@/components/ui/Eyebrow.astro";
+import type { HomePage } from "@/config/pages/home";
+
+type Value = {
+  id: string;
+  label: string;
+  eyebrow: string;
+  title: string;
+  accent: string;
+  description: string;
+  visual: NonNullable<HomePage["features"][number]["visual"]>;
+};
+interface Props {
+  values: readonly Value[];
+}
+/** "How we work": vertical tabs (Pace / Scope / Contact) on the left, one animated panel on the right. */
+const { values } = Astro.props;
+---
+
+<div data-values class="grid gap-6 px-6 pb-14 sm:px-8 lg:grid-cols-[226px_minmax(0,800px)] lg:justify-between lg:gap-0 lg:px-[57px] lg:pt-[110px] lg:pb-[40px]">
+  <div
+    role="tablist"
+    aria-label="How we work"
+    aria-orientation="vertical"
+    class="-mx-6 flex border-y border-dashed border-line-strong sm:-mx-8 lg:mx-0 lg:flex-col lg:gap-2 lg:self-start lg:border-y-0 lg:border-l lg:border-solid"
+  >
+    {
+      values.map((v, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`values-tab-${v.id}`}
+          aria-selected={i === 0 ? "true" : "false"}
+          aria-controls={`values-panel-${v.id}`}
+          tabindex={i === 0 ? 0 : -1}
+          class="group relative flex-1 px-4 py-4 text-center text-[15px] leading-6 text-subtle transition-colors duration-500 hover:text-ink aria-selected:text-ink lg:flex-none lg:px-3 lg:py-1 lg:text-left lg:font-heading-flex lg:text-[22px] lg:leading-8 lg:tracking-[-0.03em]"
+        >
+          <span
+            data-marker
+            aria-hidden="true"
+            class="absolute inset-x-0 -bottom-px h-px origin-top-left bg-ink opacity-0 group-aria-selected:opacity-100 lg:inset-x-auto lg:inset-y-0 lg:-left-px lg:h-auto lg:w-px"
+          />
+          {v.label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div>
+    {
+      values.map((value, i) => (
+        <div role="tabpanel" id={`values-panel-${value.id}`} aria-labelledby={`values-tab-${value.id}`} tabindex="0" hidden={i !== 0}>
+          <div data-panel-inner>
+            <div class="flex max-w-[556px] flex-col gap-3">
+              <Eyebrow line={false}>{value.eyebrow}</Eyebrow>
+              <h2 class="font-heading-flex text-2xl leading-7 font-medium tracking-[-0.03em] text-ink lg:text-h3 lg:leading-[38px]">
+                {value.title}{" "}<span class="font-pixel-line text-accent-text max-lg:block">{value.accent}</span>
+              </h2>
+              <p class="max-w-[473px] text-sm leading-[22px] text-muted lg:text-base lg:leading-6">{value.description}</p>
+            </div>
+            <div class="bg-dots mt-6 flex justify-center lg:mt-8 lg:h-[534px] lg:items-center">
+              <div aria-hidden="true" class="w-full max-w-[504px] lg:max-w-[670px]">
+                <ScaleToFit width={504} height={400}>
+                  <FeatureMockups visual={value.visual} />
+                </ScaleToFit>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  import { animate } from "motion";
+  import { EASE, reduceMotion } from "@/scripts/motion";
+
+  const ratio = (a: number, b: number) => (a > 0 && b > 0 ? a / b : 1);
+
+  document.querySelectorAll<HTMLElement>("[data-values]").forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+    let active = 0;
+
+    const select = (next: number, focus = false) => {
+      next = (next + tabs.length) % tabs.length;
+      if (focus) tabs[next].focus();
+      if (next === active) return;
+      const from = tabs[active].querySelector("[data-marker]")!.getBoundingClientRect();
+      tabs.forEach((t, i) => {
+        t.setAttribute("aria-selected", String(i === next));
+        t.tabIndex = i === next ? 0 : -1;
+      });
+      panels.forEach((p, i) => (p.hidden = i !== next));
+      active = next;
+      // Hidden panels had a zero-width box: refresh the mockup scale now that it is visible.
+      panels[next].querySelectorAll<HTMLElement>("[data-fit]").forEach((el) =>
+        el.style.setProperty("--fit", String(Math.min(1, el.clientWidth / Number(el.dataset.fit)))),
+      );
+      if (reduceMotion()) return;
+      const marker = tabs[next].querySelector<HTMLElement>("[data-marker]")!;
+      const to = marker.getBoundingClientRect();
+      animate(
+        marker,
+        { x: [from.left - to.left, 0], y: [from.top - to.top, 0], scaleX: [ratio(from.width, to.width), 1], scaleY: [ratio(from.height, to.height), 1] },
+        { type: "spring", stiffness: 400, damping: 34 },
+      );
+      animate(panels[next].querySelector("[data-panel-inner]")!, { opacity: [0.001, 1], y: [16, 0] }, { duration: 0.5, ease: EASE });
+    };
+
+    tabs.forEach((t, i) => t.addEventListener("click", () => select(i)));
+    root.querySelector('[role="tablist"]')!.addEventListener("keydown", (event) => {
+      const e = event as KeyboardEvent;
+      const keys: Record<string, number> = { ArrowDown: active + 1, ArrowRight: active + 1, ArrowUp: active - 1, ArrowLeft: active - 1, Home: 0, End: tabs.length - 1 };
+      if (e.key in keys) {
+        e.preventDefault();
+        select(keys[e.key], true);
+      }
+    });
+  });
+</script>

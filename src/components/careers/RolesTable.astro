@@ -1,0 +1,57 @@
+---
+import LineIcon from "@/components/icons/LineIcon.astro";
+import type { LineIconName } from "@/components/icons/line-icons";
+import Container from "@/components/ui/Container.astro";
+import type { Job } from "@/lib/content";
+
+interface Props {
+  jobs: Job[];
+  title: string;
+  note: string;
+  viewRole: string;
+}
+/** Open roles: a table on desktop, cards on phones. */
+const { jobs, title, note, viewRole } = Astro.props;
+const teamIcons: Record<string, LineIconName> = { Design: "pencil", Engineering: "code", Operations: "doc", Support: "headset", Marketing: "megaphone" };
+---
+
+<section aria-labelledby="roles-title" id="roles">
+  <Container bordered class="border-t border-dashed border-t-line-strong bg-canvas px-6 py-14 sm:px-8 lg:px-[49px] lg:py-[49px]">
+    <div data-reveal class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <h2 id="roles-title" class="font-heading-flex text-2xl leading-7 font-medium tracking-[-0.03em] text-ink lg:text-h2 lg:leading-[44px]">{title}</h2>
+      <p class="text-sm text-muted">{note}</p>
+    </div>
+    <ul data-stagger data-gap="0.06" class="mt-4">
+      {
+        jobs.map((job) => (
+          <li data-stagger-item class="lg:border-b lg:border-line lg:last:border-b-0">
+            <a
+              href={`/careers/${job.id}`}
+              class="group relative grid gap-x-4 border border-line bg-surface p-4 max-lg:-mt-px lg:h-[95px] lg:grid-cols-[minmax(0,1fr)_200px_200px_120px] lg:items-center lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0"
+            >
+              {/* Phones: icon + arrow row, as in the mobile design */}
+              <span class="mb-8 flex items-start justify-between lg:hidden">
+                <LineIcon name={teamIcons[job.data.team] ?? "sparkle"} class="size-6 text-ink" />
+                <span class="flex size-7 items-center justify-center rounded-full bg-brand-soft text-brand-strong transition-transform duration-300 group-hover:rotate-45">
+                  <LineIcon name="arrowRight" class="size-3.5 -rotate-45" />
+                </span>
+              </span>
+              <span class="flex flex-col gap-1">
+                <span class="text-base font-semibold text-ink transition-colors group-hover:text-brand-strong lg:text-lg">{job.data.title}</span>
+                <span class="text-xs text-muted lg:text-sm">{job.data.summary}</span>
+              </span>
+              <span class="mt-4 flex justify-between border-t border-line pt-3 text-xs text-muted lg:contents lg:text-sm">
+                <span>{job.data.team}</span>
+                <span>{job.data.location}</span>
+              </span>
+              <span class="hidden items-center gap-1.5 justify-self-end text-sm font-semibold text-brand-strong lg:inline-flex">
+                {viewRole}
+                <LineIcon name="arrowRight" class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
+</section>

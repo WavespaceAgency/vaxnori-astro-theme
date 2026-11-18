@@ -1,0 +1,57 @@
+---
+import { Image } from "astro:assets";
+import Container from "@/components/ui/Container.astro";
+import SectionHeading from "@/components/ui/SectionHeading.astro";
+import { getImage } from "@/lib/images";
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  accent: string;
+  steps: readonly { title: string; description: string; image: string; alt: string }[];
+}
+/** Hiring process – four numbered columns with a picture each. */
+const { eyebrow, title, accent, steps } = Astro.props;
+---
+
+<section aria-labelledby="hiring-title">
+  <Container bordered class="pt-14 pb-14 lg:pt-[100px] lg:pb-[100px]">
+    <div data-reveal class="px-6 sm:px-8 lg:px-[50px]">
+      <SectionHeading id="hiring-title" eyebrow={eyebrow} title={title} accent={accent} titleClass="max-w-[320px] lg:max-w-[440px]" />
+    </div>
+    <div class="relative mt-6 lg:mt-12">
+      <span aria-hidden="true" class="absolute inset-x-0 top-[50px] hidden border-t border-dashed border-line-strong md:block"></span>
+      <span aria-hidden="true" class="absolute inset-x-0 bottom-[50px] hidden border-t border-dashed border-line-strong md:block"></span>
+      <ol data-stagger data-gap="0.12" class="relative grid px-6 sm:grid-cols-2 md:px-4 lg:grid-cols-4 lg:px-[50px]">
+        {
+          steps.map((step, index) => (
+            <li
+              data-stagger-item
+              class="flex flex-col border-dashed border-line-strong max-md:border-x max-md:not-last:border-b md:border-r md:border-line-strong md:first:border-l"
+            >
+              <p class="flex h-10 items-center px-4 font-heading-italic text-[13px] font-medium text-brand-strong md:h-[50px] md:items-start md:px-5 md:pt-3 md:text-lg">
+                {String(index + 1).padStart(2, "0")}
+              </p>
+              <div class="flex flex-col gap-4 border-y border-dashed border-line-strong p-4 md:gap-8 md:border-0 md:p-5">
+                <div class="bg-dots overflow-hidden">
+                  <Image
+                    src={getImage(step.image)}
+                    alt={step.alt}
+                    widths={[245, 490]}
+                    sizes="(min-width: 1024px) 245px, 50vw"
+                    class="h-auto w-full transition-transform duration-700 hover:scale-[1.03]"
+                  />
+                </div>
+                <div class="flex flex-col gap-1 md:min-h-[72px] md:gap-2">
+                  <h3 class="font-heading-flex text-lg leading-6 font-medium tracking-[-0.03em] text-ink md:text-h4">{step.title}</h3>
+                  <p class="text-sm leading-5 text-muted md:text-base md:leading-6">{step.description}</p>
+                </div>
+              </div>
+              <span aria-hidden="true" class="hidden h-[50px] md:block" />
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </Container>
+</section>

@@ -1,0 +1,27 @@
+---
+interface Props {
+  items: { when: string; text: string }[];
+}
+/** Timeline with calendar icons (job posts: first 90 days). */
+const { items } = Astro.props;
+---
+
+<ol class="relative my-6 flex flex-col gap-8">
+  <span aria-hidden="true" class="absolute top-6 bottom-6 left-[11px] w-px bg-line-strong"></span>
+  {
+    items.map((item) => (
+      <li class="relative flex gap-3">
+        <span class="relative flex size-6 shrink-0 items-start justify-center bg-surface pt-0.5">
+          <svg viewBox="0 0 24 24" class="size-4 text-muted" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <rect x="4" y="5" width="16" height="15" rx="2" />
+            <path d="M4 10h16M9 3v4M15 3v4" />
+          </svg>
+        </span>
+        <div>
+          <p class="text-sm text-[#6b6b6b]">{item.when}</p>
+          <p class="mt-1 text-[15px] leading-6 font-semibold text-ink">{item.text}</p>
+        </div>
+      </li>
+    ))
+  }
+</ol>

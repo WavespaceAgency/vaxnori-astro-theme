@@ -1,0 +1,6 @@
+<!-- Numbered lists show orange "01, 02, 03" numbers, as in the design -->
+<ol
+  class="my-5 flex list-none flex-col gap-2 text-base leading-6 font-medium text-ink [counter-reset:item] [&>li]:[counter-increment:item] [&>li]:before:mr-3 [&>li]:before:font-normal [&>li]:before:text-brand-strong [&>li]:before:content-[counter(item,decimal-leading-zero)]"
+>
+  <slot />
+</ol>

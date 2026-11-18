@@ -135,7 +135,7 @@ const tick = "M6.24981 9.48181L11.9951 3.73657L12.8789 4.62046L6.24981 11.2496L2
       // The orange pill slides to the selected option (like Motion's layoutId).
       if (!reduce) {
         const to = target.getBoundingClientRect();
-        animate(target.querySelector("[data-pill]")!, { x: [from.left - to.left, 0], scaleX: [from.width / to.width, 1] }, { type: "spring", stiffness: 420, damping: 34 });
+        animate(target.querySelector("[data-pill]")!, { x: [from.left - to.left, 0], scaleX: [to.width > 0 && from.width > 0 ? from.width / to.width : 1, 1] }, { type: "spring", stiffness: 420, damping: 34 });
       }
 
       // Prices roll: the old price slides up and out, the new one comes in from below.

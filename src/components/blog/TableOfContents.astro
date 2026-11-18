@@ -1,0 +1,107 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+  title: string;
+  headings: { slug: string; text: string }[];
+  size?: "sm" | "lg";
+  showTitle?: boolean;
+}
+/**
+ * "On this page" list. Highlights the section you are reading.
+ * Clicking an item makes it active straight away and scrolls there smoothly; the active bar slides.
+ * At the bottom of the page the last item is active (short last sections can't reach the top).
+ */
+const { title, headings, size = "sm", showTitle = true } = Astro.props;
+---
+
+{
+  headings.length > 0 && (
+    <nav aria-label={title} data-toc data-size={size}>
+      <p class={showTitle ? "mb-4 text-sm tracking-[0.02em] text-brand-strong uppercase" : "sr-only"}>{title}</p>
+      <ul class={cn("relative flex flex-col border-l border-line", size === "lg" && "gap-5")}>
+        <span data-toc-bar aria-hidden="true" class={cn("absolute top-0 left-0 bg-brand", size === "lg" ? "-ml-px w-0.5" : "-ml-px w-px")} style="height: 0" />
+        {headings.map((h, i) => (
+          <li class="relative">
+            <a
+              href={`#${h.slug}`}
+              data-toc-link={h.slug}
+              aria-current={i === 0 ? "location" : undefined}
+              class={cn(
+                "block pl-4 text-subtle transition-colors duration-300 hover:text-ink aria-[current]:text-ink",
+                size === "lg" ? "text-xl leading-6 font-medium" : "py-2 text-sm aria-[current]:font-medium",
+              )}
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script>
+  import { animate } from "motion";
+  import { reduceMotion } from "@/scripts/motion";
+
+  document.querySelectorAll<HTMLElement>("[data-toc]").forEach((nav) => {
+    const links = [...nav.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")];
+    const bar = nav.querySelector<HTMLElement>("[data-toc-bar]")!;
+    const ids = links.map((a) => a.dataset.tocLink!);
+    let current = "";
+    let locked = false; // after a click, keep the clicked item until the reader scrolls on their own
+    let first = true;
+
+    const setActive = (id: string) => {
+      if (id === current) return;
+      current = id;
+      links.forEach((a) => (a.dataset.tocLink === id ? a.setAttribute("aria-current", "location") : a.removeAttribute("aria-current")));
+      const li = links[ids.indexOf(id)]?.parentElement;
+      if (!li) return;
+      const target = { y: li.offsetTop, height: li.offsetHeight };
+      if (first || reduceMotion()) {
+        bar.style.transform = `translateY(${target.y}px)`;
+        bar.style.height = `${target.height}px`;
+        first = false;
+      } else animate(bar, target, { type: "spring", stiffness: 380, damping: 34 });
+    };
+
+    let frame = 0;
+    const update = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (locked) return;
+        const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+        let id = ids[0];
+        if (atBottom) id = ids[ids.length - 1];
+        else
+          for (const s of ids) {
+            const el = document.getElementById(s);
+            if (el && el.getBoundingClientRect().top < window.innerHeight * 0.33) id = s;
+          }
+        setActive(id);
+      });
+    };
+    const unlock = () => {
+      if (!locked) return;
+      locked = false;
+      update();
+    };
+
+    links.forEach((a) =>
+      a.addEventListener("click", (event) => {
+        const target = document.getElementById(a.dataset.tocLink!);
+        if (!target) return;
+        event.preventDefault();
+        setActive(a.dataset.tocLink!);
+        locked = true;
+        target.scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth", block: "start" });
+        history.replaceState(null, "", `#${a.dataset.tocLink}`);
+      }),
+    );
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    (["wheel", "touchmove", "keydown", "mousedown"] as const).forEach((t) => window.addEventListener(t, unlock, { passive: true }));
+  });
+</script>

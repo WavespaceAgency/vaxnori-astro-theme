@@ -1,0 +1,123 @@
+---
+import Button from "@/components/ui/Button.astro";
+import type { Post } from "@/lib/content";
+import PostCard from "./PostCard.astro";
+
+interface Props {
+  posts: Post[];
+  labels: { allLabel: string; categories: readonly string[]; readMore: string; loadMore: string; empty: string; pageSize: number };
+}
+/**
+ * Category tabs (filter) + card grid + "Load older posts".
+ * Every card is in the HTML (good for SEO and no-JS); the script filters and pages them.
+ */
+const { posts, labels } = Astro.props;
+const tabs = [labels.allLabel, ...labels.categories];
+---
+
+<div data-blog-list data-page-size={labels.pageSize} data-all={labels.allLabel}>
+  <div class="border-y border-dashed border-line-strong">
+    <div role="tablist" aria-label="Filter posts by category" class="flex overflow-x-auto [scrollbar-width:none] sm:gap-4 sm:px-4 lg:pl-[50px]">
+      {
+        tabs.map((tab, i) => (
+          <button
+            type="button"
+            role="tab"
+            data-category={tab}
+            aria-selected={i === 0 ? "true" : "false"}
+            aria-controls="blog-panel"
+            tabindex={i === 0 ? 0 : -1}
+            class="group relative shrink-0 border-b border-transparent px-4 py-4 text-[15px] leading-6 whitespace-nowrap text-grey-3 transition-colors duration-300 first:pl-6 hover:text-ink aria-selected:text-ink sm:first:pl-4 lg:py-5 lg:text-base"
+          >
+            <span class="grid">
+              <span aria-hidden="true" class="invisible col-start-1 row-start-1 font-medium">
+                {tab}
+              </span>
+              <span class="col-start-1 row-start-1 text-center group-aria-selected:font-medium">{tab}</span>
+            </span>
+            <span data-underline aria-hidden="true" class="absolute inset-x-0 bottom-0 h-px origin-left bg-ink opacity-0 group-aria-selected:opacity-100" />
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <div id="blog-panel" role="tabpanel" class="px-6 pt-8 pb-14 sm:px-8 lg:px-[50px] lg:pb-12">
+    <ul data-grid class="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        posts.map((post, i) => (
+          <li data-post data-category={post.data.category} hidden={i >= labels.pageSize}>
+            <PostCard post={post} readMore={labels.readMore} />
+          </li>
+        ))
+      }
+    </ul>
+    <p data-empty hidden class="py-16 text-center text-base text-muted">{labels.empty}</p>
+    <div data-more-wrap class="mt-10 flex justify-center" hidden={posts.length <= labels.pageSize}>
+      <Button variant="outline" data-more>{labels.loadMore}</Button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { animate, stagger } from "motion";
+  import { EASE, reduceMotion } from "@/scripts/motion";
+
+  document.querySelectorAll<HTMLElement>("[data-blog-list]").forEach((root) => {
+    const pageSize = Number(root.dataset.pageSize);
+    const all = root.dataset.all!;
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const items = [...root.querySelectorAll<HTMLElement>("[data-post]")];
+    const empty = root.querySelector<HTMLElement>("[data-empty]")!;
+    const moreWrap = root.querySelector<HTMLElement>("[data-more-wrap]")!;
+    let active = 0;
+    let visible = pageSize;
+
+    const render = (from = 0) => {
+      const category = tabs[active].dataset.category;
+      const matches = items.filter((li) => category === all || li.dataset.category === category);
+      items.forEach((li) => (li.hidden = true));
+      const shown = matches.slice(0, visible);
+      shown.forEach((li) => (li.hidden = false));
+      empty.hidden = shown.length > 0;
+      moreWrap.hidden = matches.length <= visible;
+      const entering = shown.slice(from);
+      if (!reduceMotion() && entering.length)
+        animate(entering, { opacity: [0.001, 1], y: [28, 0] }, { duration: 0.6, ease: EASE, delay: stagger(0.06) });
+    };
+
+    const select = (next: number, focus = false) => {
+      next = (next + tabs.length) % tabs.length;
+      if (focus) tabs[next].focus();
+      if (next === active) return;
+      const from = tabs[active].querySelector("[data-underline]")!.getBoundingClientRect();
+      tabs.forEach((t, i) => {
+        t.setAttribute("aria-selected", String(i === next));
+        t.tabIndex = i === next ? 0 : -1;
+      });
+      active = next;
+      visible = pageSize;
+      if (!reduceMotion()) {
+        const line = tabs[next].querySelector<HTMLElement>("[data-underline]")!;
+        const to = line.getBoundingClientRect();
+        animate(line, { x: [from.left - to.left, 0], scaleX: [to.width > 0 && from.width > 0 ? from.width / to.width : 1, 1] }, { type: "spring", stiffness: 400, damping: 34 });
+      }
+      render();
+    };
+
+    tabs.forEach((t, i) => t.addEventListener("click", () => select(i)));
+    root.querySelector('[role="tablist"]')!.addEventListener("keydown", (event) => {
+      const e = event as KeyboardEvent;
+      const keys: Record<string, number> = { ArrowRight: active + 1, ArrowLeft: active - 1, Home: 0, End: tabs.length - 1 };
+      if (e.key in keys) {
+        e.preventDefault();
+        select(keys[e.key], true);
+      }
+    });
+    root.querySelector("[data-more]")!.addEventListener("click", () => {
+      const before = visible;
+      visible += pageSize;
+      render(before);
+    });
+  });
+</script>

@@ -1,0 +1,116 @@
+---
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+import HiringProcess from "@/components/careers/HiringProcess.astro";
+import Icon from "@/components/icons/Icon.astro";
+import LineIcon from "@/components/icons/LineIcon.astro";
+import type { LineIconName } from "@/components/icons/line-icons";
+import JsonLd from "@/components/JsonLd.astro";
+import { mdxComponents } from "@/components/mdx";
+import Button from "@/components/ui/Button.astro";
+import Container from "@/components/ui/Container.astro";
+import { careersPage } from "@/config/pages/careers";
+import { siteConfig } from "@/config/site";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getJobs, type Job } from "@/lib/content";
+import { getImage } from "@/lib/images";
+
+export async function getStaticPaths() {
+  const jobs = await getJobs();
+  return jobs.map((job) => ({ params: { slug: job.id }, props: { job } }));
+}
+
+interface Props {
+  job: Job;
+}
+const { job } = Astro.props;
+const meta = job.data;
+const { Content } = await render(job);
+const t = careersPage.job;
+const remote = meta.location.toLowerCase().includes("remote");
+const details: { icon: LineIconName; value: string; label: string }[] = [
+  { icon: "building", value: siteConfig.name, label: t.companyLabel },
+  { icon: "bag", value: meta.type, label: t.typeLabel },
+  { icon: "sparkle", value: meta.function, label: t.functionLabel },
+];
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "JobPosting",
+  title: meta.title,
+  description: `${meta.summary}. ${meta.equity}`,
+  datePosted: meta.posted,
+  employmentType: "FULL_TIME",
+  hiringOrganization: { "@type": "Organization", name: siteConfig.name, sameAs: siteConfig.url },
+  ...(remote
+    ? { jobLocationType: "TELECOMMUTE", applicantLocationRequirements: [{ "@type": "Country", name: "US" }, { "@type": "Country", name: "EU" }] }
+    : { jobLocation: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: meta.location } } }),
+};
+const tags = [meta.team, meta.location, meta.type, meta.salaryShort, `${t.postedLabel} ${formatDate(meta.posted)}`];
+---
+
+<BaseLayout title={`${meta.title} – Careers`} description={`${meta.summary}. ${meta.location}, ${meta.type}.`}>
+  <JsonLd slot="head" data={jsonLd} />
+  <Container bordered class="px-4 pt-6 sm:px-8 lg:px-[50px] lg:pt-[30px]">
+    <nav aria-label="Breadcrumb" class="flex gap-2 text-xs tracking-[0.02em] text-subtle uppercase lg:text-sm">
+      <a href="/careers" class="hover:text-ink">{t.breadcrumb}</a>
+      <span aria-hidden="true">/</span>
+      <span class="text-brand-strong" aria-current="page">{meta.team}</span>
+    </nav>
+
+    <div class="hero-reveal relative mt-6 aspect-[1137/390] overflow-hidden rounded-[4px] max-sm:aspect-[16/9]">
+      <Image
+        src={getImage(t.cover)}
+        alt={t.coverAlt}
+        widths={[402, 804, 1137, 2274]}
+        sizes="(min-width: 1280px) 1137px, 100vw"
+        loading="eager"
+        fetchpriority="high"
+        class="absolute inset-0 size-full object-cover"
+      />
+    </div>
+    <span aria-hidden="true" class="relative z-10 -mt-10 ml-6 flex size-20 items-center justify-center rounded-full border-4 border-surface bg-brand text-white lg:ml-[55px]">
+      <Icon name="logoMarkAlt" class="size-9" />
+    </span>
+
+    <div class="grid gap-10 pt-6 pb-14 lg:grid-cols-[minmax(0,732px)_288px] lg:justify-between lg:px-[55px] lg:pb-[100px]">
+      <div>
+        <div class="hero-reveal border-b border-dashed border-line-strong pb-8">
+          <h1 class="font-heading-flex text-[32px] leading-10 font-medium tracking-[-0.03em] text-ink lg:text-[40px] lg:leading-[44px]">{meta.title}</h1>
+          <p class="mt-2 text-base text-muted">{meta.location.includes("Remote") ? "Remote in US or EU unless noted" : meta.location}</p>
+          <ul class="mt-5 flex flex-wrap gap-2">
+            {tags.map((tag) => <li class="rounded-full bg-surface-muted px-3 py-1 text-sm text-ink">{tag}</li>)}
+          </ul>
+        </div>
+        <div class="[&_h2]:mt-8 [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:leading-7 [&_p]:my-2 [&_p]:text-[15px] [&_p]:leading-6 [&_ul]:my-2 [&_ul]:gap-1 [&_ul]:text-sm [&_ul]:leading-6">
+          <Content components={mdxComponents} />
+        </div>
+      </div>
+
+      <aside class="max-lg:order-first">
+        <div class="hero-reveal rounded-card border border-line bg-surface p-5 shadow-card lg:sticky lg:top-24" style="--delay: 0.15s">
+          <p class="text-xs tracking-[0.04em] text-subtle uppercase">{t.compensation}</p>
+          <p class="mt-2 font-heading-flex text-2xl font-medium tracking-[-0.03em] text-ink">{meta.salary}</p>
+          <p class="mt-1 text-xs leading-4 text-muted">{meta.equity}</p>
+          <p class="mt-6 border-t border-line pt-4 text-xs text-subtle">{t.details}</p>
+          <ul class="mt-3 flex flex-col gap-4">
+            {
+              details.map((d) => (
+                <li class="flex items-center gap-3">
+                  <span class="flex size-9 items-center justify-center rounded-full bg-canvas text-muted">
+                    <LineIcon name={d.icon} class="size-4" />
+                  </span>
+                  <span>
+                    <span class="block text-sm font-medium text-ink">{d.value}</span>
+                    <span class="block text-xs text-subtle">{d.label}</span>
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+          <Button href={t.apply.href} class="mt-6 w-full">{t.apply.label}</Button>
+        </div>
+      </aside>
+    </div>
+  </Container>
+  <HiringProcess {...careersPage.hiring} />
+</BaseLayout>
