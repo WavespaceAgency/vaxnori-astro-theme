@@ -1,0 +1,75 @@
+---
+import Container from "@/components/ui/Container.astro";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  comparison: { title: string; columns: readonly string[]; highlight: number; rows: readonly (readonly string[])[] };
+}
+/** "What's in each plan" comparison table. Fits phones without sideways scroll. */
+const { comparison } = Astro.props;
+const hi = comparison.highlight + 1; // +1 for the feature column
+---
+
+<section aria-labelledby="compare-title">
+  <Container bordered>
+    <div data-reveal class="px-6 py-10 sm:px-8 lg:px-12 lg:pt-[62px] lg:pb-[35px]">
+      <h2 id="compare-title" class="font-heading-flex text-2xl leading-7 font-medium tracking-[-0.03em] text-ink lg:text-h2 lg:leading-[44px]">
+        {comparison.title}
+      </h2>
+    </div>
+    <div>
+      <table class="w-full table-fixed border-collapse text-left text-[11px] leading-4 sm:text-sm lg:text-base">
+        <colgroup>
+          <col class="w-[30.7%]" />
+          <col />
+          <col />
+          <col />
+        </colgroup>
+        <thead>
+          <tr class="border-y border-line">
+            {
+              comparison.columns.map((col, i) => (
+                <th
+                  scope="col"
+                  class={cn(
+                    "h-[52px] px-2 font-normal tracking-[0.02em] uppercase sm:px-4 lg:h-[76px] lg:px-5",
+                    i === 0 ? "pl-4 sm:pl-6 lg:pl-12" : "border-l border-dashed border-line-strong",
+                    i === hi ? "text-brand-strong" : "text-ink",
+                  )}
+                >
+                  {col}
+                </th>
+              ))
+            }
+          </tr>
+        </thead>
+        <tbody>
+          {
+            comparison.rows.map((row) => (
+              <tr class="border-b border-line transition-colors hover:bg-canvas">
+                {row.map((cell, i) =>
+                  i === 0 ? (
+                    <th scope="row" class="h-[60px] pr-2 pl-4 font-normal text-ink sm:pl-6 lg:h-[76px] lg:pl-12">
+                      {cell}
+                    </th>
+                  ) : (
+                    <td class={cn("h-[60px] border-l border-dashed border-line-strong px-2 sm:px-4 lg:h-[76px] lg:px-5", i === hi ? "font-semibold text-ink" : "text-ink")}>
+                      {cell === "-" ? <span aria-label="Not included">-</span> : cell}
+                    </td>
+                  ),
+                )}
+              </tr>
+            ))
+          }
+          <!-- Empty row: the column lines continue below the table, as in the design -->
+          <tr aria-hidden="true" class="hidden lg:table-row">
+            <td class="h-[75px]"></td>
+            <td class="border-l border-dashed border-line-strong"></td>
+            <td class="border-l border-dashed border-line-strong"></td>
+            <td class="border-l border-dashed border-line-strong"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </Container>
+</section>

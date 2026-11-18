@@ -1,0 +1,30 @@
+---
+import CtaBanner from "@/components/sections/CtaBanner.astro";
+import Faq from "@/components/sections/Faq.astro";
+import HowItWorks from "@/components/sections/HowItWorks.astro";
+import LogoStrip from "@/components/sections/LogoStrip.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import StepRows from "@/components/sections/StepRows.astro";
+import VideoBlock from "@/components/sections/VideoBlock.astro";
+import { homePage } from "@/config/pages/home";
+import { howItWorksPage } from "@/config/pages/how-it-works";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout {...howItWorksPage.meta}>
+  <PageHero {...howItWorksPage.hero}>
+    <div id="video" class="scroll-mt-20 p-6 sm:p-8 lg:px-[50px] lg:pt-[50px] lg:pb-[60px]">
+      <div data-reveal data-delay="0.5" data-y="0">
+        <VideoBlock video={howItWorksPage.video} />
+      </div>
+    </div>
+  </PageHero>
+  <LogoStrip content={homePage.logos} />
+  <!-- Desktop: large rows. Phones: the stacked step cards from the Figma mobile frame. -->
+  <StepRows content={howItWorksPage.steps} />
+  <div class="md:hidden">
+    <HowItWorks content={homePage.howItWorks} />
+  </div>
+  <Faq content={howItWorksPage.faq} />
+  <CtaBanner content={howItWorksPage.cta} bottomGap mobileSplit />
+</BaseLayout>

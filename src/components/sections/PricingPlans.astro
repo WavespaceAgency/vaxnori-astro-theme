@@ -1,0 +1,167 @@
+---
+import Button from "@/components/ui/Button.astro";
+import type { Plan } from "@/config/pages/pricing";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  plans: readonly Plan[];
+  billing: { monthly: string; yearly: string; yearlyNote: string; perMonth: string };
+}
+/** Monthly / annual switch + plan cards. Prices roll when you switch. Prices live in src/config/pages/pricing.ts. */
+const { plans, billing } = Astro.props;
+const tick = "M6.24981 9.48181L11.9951 3.73657L12.8789 4.62046L6.24981 11.2496L2.27234 7.27212L3.15622 6.38825L6.24981 9.48181Z";
+---
+
+<div data-pricing class="relative">
+  <!-- Full-height dashed dividers between the plans (desktop) -->
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 hidden grid-cols-3 gap-8 px-12 lg:grid">
+    <span></span>
+    <span class="relative before:absolute before:inset-y-0 before:-left-4 before:border-l before:border-dashed before:border-line-strong"></span>
+    <span class="relative before:absolute before:inset-y-0 before:-left-4 before:border-l before:border-dashed before:border-line-strong"></span>
+  </div>
+  <div class="flex justify-center border-b border-dashed border-line-strong px-4 py-8 lg:border-b-0 lg:pt-[37px] lg:pb-[73px]">
+    <div role="radiogroup" aria-label="Billing period" class="relative flex rounded-full bg-surface-muted p-1">
+      {
+        [false, true].map((isYearly) => (
+          <button
+            type="button"
+            role="radio"
+            data-yearly={String(isYearly)}
+            aria-checked={isYearly ? "false" : "true"}
+            tabindex={isYearly ? -1 : 0}
+            class="group relative z-10 min-h-9 rounded-full px-4 text-sm leading-5 font-semibold text-ink transition-colors duration-300 aria-checked:text-white"
+          >
+            <span data-pill class="absolute inset-0 -z-10 rounded-full bg-brand-strong opacity-0 group-aria-checked:opacity-100" />
+            {isYearly ? (
+              <Fragment>
+                {billing.yearly}{" "}<span>{billing.yearlyNote}</span>
+              </Fragment>
+            ) : (
+              billing.monthly
+            )}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <ul data-stagger data-gap="0.12" class="relative grid border-b border-dashed border-line-strong sm:px-8 lg:grid-cols-3 lg:gap-8 lg:px-12 lg:pb-[75px]">
+    {
+      plans.map((plan) => {
+        const featured = Boolean(plan.featured);
+        return (
+          <li data-stagger-item class="flex border-dashed border-line-strong px-6 py-16 not-last:border-b sm:px-0 lg:border-0 lg:p-0">
+            <article
+              class={cn(
+                "relative flex min-h-[530px] w-full flex-col justify-between rounded-[4px] transition-transform duration-500 hover:-translate-y-1 lg:min-h-[600px]",
+                featured ? "bg-ink text-white shadow-[0_24px_60px_-20px_rgb(0_0_0/0.45)]" : "border-[0.5px] border-line-soft bg-[#f9f9f9]",
+              )}
+            >
+              <div>
+                <div class="flex flex-col gap-2 p-6">
+                  <h2 class={cn("font-pixel-line text-lg leading-10", featured ? "text-white" : "text-ink")}>{plan.name}</h2>
+                  <p class="-mt-2 flex items-baseline gap-1.5">
+                    <span
+                      data-price
+                      data-monthly={plan.monthly}
+                      data-yearly={plan.yearly}
+                      class="relative inline-flex overflow-hidden font-heading-flex text-[32px] leading-10 font-medium tracking-[-0.03em]"
+                    >
+                      <span>${plan.monthly}</span>
+                    </span>
+                    <span class={cn("font-heading-flex text-lg", featured ? "text-white/60" : "text-subtle")}>{billing.perMonth}</span>
+                  </p>
+                  <p class={cn("text-base leading-[27px]", featured ? "text-white/60" : "text-[#6b6b6b]")}>{plan.description}</p>
+                  {plan.badge && (
+                    <span class="absolute top-9 right-6 rounded-[4px] bg-white px-1.5 pt-px pb-0.5 text-[10px] leading-4 font-semibold tracking-[0.02em] text-brand-strong">
+                      {plan.badge}
+                    </span>
+                  )}
+                </div>
+                <ul class="flex flex-col gap-3 px-6">
+                  {plan.features.map((feature) => (
+                    <li class={cn("flex items-center gap-2 text-sm leading-[27px] font-medium", featured ? "text-white" : "text-ink")}>
+                      {/* Figma "Check mark": lime 15px tick on the dark card, black 12px tick otherwise */}
+                      <span class={cn("flex size-[18px] shrink-0 items-center justify-center rounded-full", featured ? "bg-white/14" : "bg-line")}>
+                        <svg viewBox="0 0 15 15" class={featured ? "size-[15px]" : "size-3"} aria-hidden="true">
+                          <path d={tick} fill={featured ? "#a6ff00" : "#000"} />
+                        </svg>
+                      </span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div class="p-6">
+                {featured ? (
+                  <Button href={plan.cta.href} class="min-h-12 w-full lg:min-h-12">
+                    {plan.cta.label}
+                  </Button>
+                ) : (
+                  <Button href={plan.cta.href} variant="outline-brand" class="min-h-[46px] w-full lg:min-h-[46px]">
+                    {plan.cta.label}
+                  </Button>
+                )}
+              </div>
+            </article>
+          </li>
+        );
+      })
+    }
+  </ul>
+</div>
+
+<script>
+  import { animate } from "motion";
+  import { EASE, reduceMotion } from "@/scripts/motion";
+
+  document.querySelectorAll<HTMLElement>("[data-pricing]").forEach((root) => {
+    const radios = [...root.querySelectorAll<HTMLButtonElement>('[role="radio"]')];
+    let yearly = false;
+
+    const setYearly = (next: boolean, focus = false) => {
+      const target = radios[next ? 1 : 0];
+      if (focus) target.focus();
+      if (next === yearly) return;
+      const from = radios[yearly ? 1 : 0].getBoundingClientRect();
+      yearly = next;
+      radios.forEach((r) => {
+        const on = r === target;
+        r.setAttribute("aria-checked", String(on));
+        r.tabIndex = on ? 0 : -1;
+      });
+      const reduce = reduceMotion();
+
+      // The orange pill slides to the selected option (like Motion's layoutId).
+      if (!reduce) {
+        const to = target.getBoundingClientRect();
+        animate(target.querySelector("[data-pill]")!, { x: [from.left - to.left, 0], scaleX: [from.width / to.width, 1] }, { type: "spring", stiffness: 420, damping: 34 });
+      }
+
+      // Prices roll: the old price slides up and out, the new one comes in from below.
+      root.querySelectorAll<HTMLElement>("[data-price]").forEach((box) => {
+        const text = `$${next ? box.dataset.yearly : box.dataset.monthly}`;
+        const old = box.firstElementChild as HTMLElement;
+        const span = document.createElement("span");
+        span.textContent = text;
+        if (reduce) {
+          box.replaceChildren(span);
+          return;
+        }
+        old.style.position = "absolute";
+        animate(old, { y: "-100%", opacity: 0 }, { duration: 0.45, ease: EASE }).then(() => old.remove());
+        box.append(span);
+        animate(span, { y: ["100%", 0], opacity: [0, 1] }, { duration: 0.45, ease: EASE });
+      });
+    };
+
+    radios.forEach((r, i) => r.addEventListener("click", () => setYearly(i === 1)));
+    root.querySelector('[role="radiogroup"]')!.addEventListener("keydown", (event) => {
+      const e = event as KeyboardEvent;
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
+        e.preventDefault();
+        setYearly(!yearly, true);
+      }
+    });
+  });
+</script>

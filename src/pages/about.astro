@@ -1,0 +1,19 @@
+---
+import CtaBanner from "@/components/sections/CtaBanner.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import Principles from "@/components/sections/Principles.astro";
+import Stats from "@/components/sections/Stats.astro";
+import StorySection from "@/components/sections/StorySection.astro";
+import TeamSection from "@/components/sections/TeamSection.astro";
+import { aboutPage } from "@/config/pages/about";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout {...aboutPage.meta}>
+  <PageHero {...aboutPage.hero} />
+  <Principles items={aboutPage.principles} />
+  <StorySection story={aboutPage.story} />
+  <Stats content={aboutPage.stats} />
+  <TeamSection team={aboutPage.team} />
+  <CtaBanner content={aboutPage.cta} />
+</BaseLayout>

@@ -1,0 +1,22 @@
+---
+import ComparisonTable from "@/components/sections/ComparisonTable.astro";
+import Faq from "@/components/sections/Faq.astro";
+import FeatureRows from "@/components/sections/FeatureRows.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import PricingPlans from "@/components/sections/PricingPlans.astro";
+import PromiseBand from "@/components/sections/PromiseBand.astro";
+import { pricingPage } from "@/config/pages/pricing";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout {...pricingPage.meta}>
+  <PageHero {...pricingPage.hero}>
+    <div class="mt-9 border-t border-dashed border-line-strong">
+      <PricingPlans plans={pricingPage.plans} billing={pricingPage.billing} />
+    </div>
+  </PageHero>
+  <ComparisonTable comparison={pricingPage.comparison} />
+  <PromiseBand items={pricingPage.promises} />
+  <FeatureRows content={[{ ...pricingPage.track, eyebrowLine: true }]} accentBreakMobile />
+  <Faq content={pricingPage.faq} gapTop />
+</BaseLayout>

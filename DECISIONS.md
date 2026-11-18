@@ -50,3 +50,14 @@ This file lists only what is new or different in the Astro version. It moves int
 - **Lighthouse mobile (local production build):** Performance 99–100, Accessibility 97, Best Practices 100, SEO 100.
   TBT 10–20 ms, CLS 0.027 (font swap in the hero; preloading fonts made LCP slower, so it was not kept).
   The 97 is the accepted Figma choices: white on Primary `#ff4820` (3.4:1) and the grey placeholder logos.
+
+## Phase 4 – About, How it works, Pricing
+- Ported 1:1 from the Next.js build (same Figma decisions apply – see the Next.js DECISIONS).
+  Check against the live Next.js demo (production build): identical page heights at 1440 and 402;
+  pixel difference About 0.10% / 0.02%, How it works 0.10% / 0.36%, Pricing 0.02% / 0.06%.
+  No sideways scroll at 320, 768, 1024, 1920. No console errors.
+- **New shared parts:** `PageHero` (slot for extra content), `Principles`, `StorySection`, `TeamSection`,
+  `VideoBlock`, `StepRows`, `PricingPlans`, `ComparisonTable`, `PromiseBand`.
+- **Video dialog** uses the native `<dialog>` (focus stays inside, Esc closes, backdrop click closes).
+  The video file / YouTube / Vimeo URL loads only when the dialog opens (no third-party requests before).
+- **Billing switch** is a radiogroup (click or arrow keys); the orange pill slides and prices roll like the Next.js version.

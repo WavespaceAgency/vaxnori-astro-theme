@@ -1,0 +1,36 @@
+---
+import LineIcon from "@/components/icons/LineIcon.astro";
+import type { LineIconName } from "@/components/icons/line-icons";
+import Container from "@/components/ui/Container.astro";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  items: readonly { icon: LineIconName; title: string; description: string }[];
+}
+/** Black band with four promises (Pricing). */
+const { items } = Astro.props;
+---
+
+<section aria-label="Our promises">
+  <Container class="bg-ink">
+    <ul data-stagger data-gap="0.1" class="grid sm:grid-cols-2 lg:grid-cols-[331fr_287fr_287fr_287fr]">
+      {
+        items.map((item, i) => (
+          <li
+            data-stagger-item
+            class={cn(
+              "flex flex-col justify-between gap-12 border-dashed border-white/20 [border-image:none] px-6 pt-10 pb-8 not-last:border-b sm:not-last:border-b-0 lg:h-[264px] lg:pr-6 lg:pb-[26px]",
+              i === 0 ? "lg:pl-12" : "lg:border-l lg:pl-6",
+            )}
+          >
+            <LineIcon name={item.icon} class="size-8 text-white" />
+            <div class="flex flex-col gap-2">
+              <h3 class="font-heading-flex text-h4 font-medium text-white">{item.title}</h3>
+              <p class="text-base leading-6 text-white/60">{item.description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
+</section>

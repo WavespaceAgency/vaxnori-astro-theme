@@ -1,0 +1,65 @@
+---
+import { Image } from "astro:assets";
+import LineIcon from "@/components/icons/LineIcon.astro";
+import Container from "@/components/ui/Container.astro";
+import Eyebrow from "@/components/ui/Eyebrow.astro";
+import { getImage } from "@/lib/images";
+
+interface Props {
+  story: {
+    eyebrow: string;
+    title: string;
+    accent: string;
+    description: string;
+    timeline: readonly { date: string; text: string }[];
+    image: { src: string; alt: string };
+    frame: string;
+  };
+}
+/** "How we got here" – text, timeline and a framed photo (About). */
+const { story } = Astro.props;
+---
+
+<section aria-labelledby="story-title">
+  <Container bordered class="grid items-center gap-10 px-6 py-14 sm:px-8 lg:grid-cols-[minmax(0,556px)_minmax(0,400px)] lg:justify-between lg:px-[50px] lg:py-12">
+    <div data-reveal class="flex flex-col gap-10 lg:gap-14">
+      <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-3">
+          <Eyebrow line={false}>{story.eyebrow}</Eyebrow>
+          <h2 id="story-title" class="font-heading-flex text-2xl leading-7 font-medium tracking-[-0.03em] text-ink lg:text-h3 lg:leading-[38px]">
+            {story.title}{" "}<span class="block font-pixel-line text-accent-text">{story.accent}</span>
+          </h2>
+        </div>
+        <p class="max-w-[386px] text-sm leading-[22px] text-muted lg:text-base lg:leading-6">{story.description}</p>
+      </div>
+      <ol class="relative flex flex-col gap-6">
+        <span aria-hidden="true" class="absolute top-6 bottom-6 left-4 w-px bg-line-strong"></span>
+        {
+          story.timeline.map((item) => (
+            <li class="relative flex items-center gap-2">
+              <span class="flex size-8 shrink-0 items-start justify-center bg-surface pt-1.5">
+                <LineIcon name="calendar" class="size-4 text-muted" />
+              </span>
+              <div class="flex flex-col gap-0.5">
+                <time class="text-xs text-[#6b6b6b]">{item.date}</time>
+                <p class="text-[13px] font-semibold tracking-[0.02em] text-ink">{item.text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+    <div data-reveal="scale" data-delay="0.1" class="relative mx-auto aspect-square w-full max-w-[400px]">
+      <Image src={getImage(story.frame)} alt="" widths={[400, 800]} sizes="400px" class="absolute inset-0 size-full object-cover" />
+      <div class="absolute inset-[11.43%] overflow-hidden">
+        <Image
+          src={getImage(story.image.src)}
+          alt={story.image.alt}
+          widths={[310, 620]}
+          sizes="(min-width: 1024px) 310px, 80vw"
+          class="absolute inset-0 size-full object-cover transition-transform duration-700 hover:scale-105"
+        />
+      </div>
+    </div>
+  </Container>
+</section>

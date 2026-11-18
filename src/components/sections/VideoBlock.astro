@@ -1,0 +1,99 @@
+---
+import { Image } from "astro:assets";
+import Icon from "@/components/icons/Icon.astro";
+import { getImage } from "@/lib/images";
+
+interface Props {
+  video: { poster: string; alt: string; label: string; src: string; emptyNote: string };
+}
+/**
+ * Poster image with a "Play the video" bar. Opens the video in an accessible dialog
+ * (native <dialog>: focus stays inside, Esc closes). Set `src` in src/config/pages/how-it-works.ts
+ * to an .mp4 file or a YouTube/Vimeo embed URL; empty shows `emptyNote`.
+ */
+const { video } = Astro.props;
+const poster = getImage(video.poster);
+const isEmbed = /youtube\.com|youtu\.be|vimeo\.com/.test(video.src);
+---
+
+<div data-video>
+  <button type="button" data-video-open aria-haspopup="dialog" class="group relative block aspect-[322/183] w-full overflow-hidden text-left sm:aspect-[1140/552]">
+    <Image
+      src={poster}
+      alt={video.alt}
+      widths={[402, 804, 1140, 2280]}
+      sizes="(min-width: 1280px) 1140px, 100vw"
+      class="absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+    />
+    <span class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/60 to-transparent p-3 sm:p-5">
+      <span class="text-sm leading-5 font-semibold text-white sm:text-[22px] sm:leading-[27px]">{video.label}</span>
+      <span class="flex size-9 items-center justify-center rounded-full bg-white text-ink transition-transform duration-300 group-hover:scale-110 sm:size-14">
+        <svg viewBox="0 0 24 24" class="ml-0.5 size-4 sm:size-6" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z"></path></svg>
+      </span>
+    </span>
+  </button>
+
+  <dialog
+    data-video-dialog
+    aria-label={video.label}
+    class="m-auto w-full max-w-5xl overflow-visible border-0 bg-transparent p-4 backdrop:bg-black/80 open:flex open:items-center"
+  >
+    <div data-video-panel class="relative w-full">
+      <button type="button" data-video-close aria-label="Close video" class="absolute -top-12 right-0 flex size-11 items-center justify-center rounded-full bg-white text-ink">
+        <Icon name="close" class="size-4" />
+      </button>
+      <div class="relative aspect-video overflow-hidden rounded-card bg-black">
+        {
+          video.src ? (
+            isEmbed ? (
+              <iframe data-src={video.src} title={video.label} allow="autoplay; fullscreen; picture-in-picture" allowfullscreen class="size-full" />
+            ) : (
+              <video data-src={video.src} poster={poster.src} controls playsinline class="size-full" />
+            )
+          ) : (
+            <Fragment>
+              <Image src={poster} alt="" widths={[1140]} sizes="100vw" class="absolute inset-0 size-full object-cover opacity-40" />
+              <p class="absolute inset-0 flex items-center justify-center p-6 text-center text-base text-white">{video.emptyNote}</p>
+            </Fragment>
+          )
+        }
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  import { animate } from "motion";
+  import { EASE, reduceMotion } from "@/scripts/motion";
+
+  document.querySelectorAll<HTMLElement>("[data-video]").forEach((root) => {
+    const dialog = root.querySelector<HTMLDialogElement>("[data-video-dialog]")!;
+    const panel = root.querySelector<HTMLElement>("[data-video-panel]")!;
+    const media = root.querySelector<HTMLIFrameElement | HTMLVideoElement>("[data-src]");
+    let overflow = "";
+
+    root.querySelector("[data-video-open]")!.addEventListener("click", () => {
+      // Load the video only when it is opened (no third-party requests before).
+      if (media && !media.getAttribute("src")) media.setAttribute("src", media.dataset.src!);
+      if (media instanceof HTMLVideoElement) void media.play().catch(() => {});
+      overflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      dialog.showModal();
+      root.querySelector<HTMLButtonElement>("[data-video-close]")!.focus();
+      if (!reduceMotion()) {
+        animate(dialog, { opacity: [0, 1] }, { duration: 0.3 });
+        animate(panel, { scale: [0.94, 1], y: [16, 0] }, { duration: 0.4, ease: EASE });
+      }
+    });
+
+    const close = () => dialog.close();
+    root.querySelector("[data-video-close]")!.addEventListener("click", close);
+    // Click on the dark backdrop (outside the panel) closes.
+    dialog.addEventListener("click", (e) => !panel.contains(e.target as Node) && close());
+    dialog.addEventListener("close", () => {
+      document.body.style.overflow = overflow;
+      if (media instanceof HTMLVideoElement) media.pause();
+      if (media instanceof HTMLIFrameElement) media.removeAttribute("src"); // stops YouTube/Vimeo playback
+    });
+  });
+</script>

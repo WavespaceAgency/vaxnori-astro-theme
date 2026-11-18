@@ -1,0 +1,32 @@
+---
+import LineIcon from "@/components/icons/LineIcon.astro";
+import type { LineIconName } from "@/components/icons/line-icons";
+import Container from "@/components/ui/Container.astro";
+
+interface Props {
+  items: readonly { icon: LineIconName; title: string; description: string }[];
+}
+/** Three principles in dashed columns (About). */
+const { items } = Astro.props;
+---
+
+<section aria-label="What we believe">
+  <Container bordered class="pt-[30px]">
+    <ul data-stagger data-gap="0.12" class="grid border-y border-dashed border-line-strong md:grid-cols-3">
+      {
+        items.map((item) => (
+          <li
+            data-stagger-item
+            class="flex flex-col gap-8 border-dashed border-line-strong px-6 py-10 not-last:border-b md:gap-12 md:not-last:border-r md:not-last:border-b-0 lg:px-12 lg:py-[72px]"
+          >
+            <LineIcon name={item.icon} class="size-9 text-ink" />
+            <div class="flex flex-col gap-2">
+              <h2 class="font-heading-flex text-h4 font-medium text-ink">{item.title}</h2>
+              <p class="text-[15px] leading-5 text-muted">{item.description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
+</section>
