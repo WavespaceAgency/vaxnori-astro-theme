@@ -1,0 +1,97 @@
+---
+import "@/styles/global.css";
+import JsonLd from "@/components/JsonLd.astro";
+import { siteConfig } from "@/config/site";
+import { absoluteUrl, defaultOgImage, pageTitle } from "@/lib/seo";
+
+interface Props {
+  /** Page title. Rendered as "Title | Site name". Leave out for the home page. */
+  title?: string;
+  description?: string;
+  type?: "website" | "article";
+  /** Share image path (1200×630). Defaults to /og.png. */
+  image?: string;
+  /** Hide the page from search engines (e.g. 404). */
+  noindex?: boolean;
+}
+
+const { title, description = siteConfig.description, type = "website", image, noindex = false } = Astro.props;
+
+const fullTitle = pageTitle(title);
+const canonical = absoluteUrl(Astro.url.pathname);
+const ogImage = absoluteUrl(image ?? defaultOgImage.src);
+
+const orgId = `${siteConfig.url}/#organization`;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": orgId,
+      name: siteConfig.name,
+      legalName: siteConfig.legalName,
+      url: siteConfig.url,
+      logo: absoluteUrl("/favicon.svg"),
+      email: siteConfig.email,
+      sameAs: siteConfig.socials.map((s) => s.href),
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteConfig.url}/#website`,
+      url: siteConfig.url,
+      name: siteConfig.name,
+      description: siteConfig.description,
+      publisher: { "@id": orgId },
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en" class="antialiased">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="color-scheme" content="light" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={siteConfig.name} />
+    <meta property="og:locale" content={siteConfig.locale} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content={String(defaultOgImage.width)} />
+    <meta property="og:image:height" content={String(defaultOgImage.height)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <JsonLd data={jsonLd} />
+    <slot name="head" />
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-button focus:bg-ink focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white"
+    >
+      Skip to content
+    </a>
+    <slot name="header" />
+    <main id="main" tabindex="-1" class="flex-1 focus:outline-none">
+      <slot />
+    </main>
+    <slot name="footer" />
+  </body>
+</html>

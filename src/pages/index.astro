@@ -1,16 +1,25 @@
 ---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { Image } from "astro:assets";
+import { getImage } from "@/lib/images";
+import { lineIconPaths } from "@/components/icons/line-icons";
+import { siteConfig } from "@/config/site";
+const hero = getImage("/images/home/feature-launch.webp");
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout>
+  <!-- Phase 2 foundation check. Replaced by the real Home page in the next phase. -->
+  <section class="mx-auto max-w-site px-5 py-24">
+    <p class="font-semibold text-brand">{siteConfig.name}</p>
+    <h1 class="mt-4 font-heading text-display font-medium">
+      From one sentence to a <span class="font-pixel-line text-accent-text">running company.</span>
+    </h1>
+    <p class="mt-4 max-w-xl text-lead text-muted">{siteConfig.description}</p>
+    <div class="mt-6 flex gap-3 text-brand">
+      {Object.entries(lineIconPaths).slice(0, 8).map(([, p]) => (
+        <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={p} />
+      ))}
+    </div>
+    <Image src={hero} alt="" widths={[504, 1008]} sizes="504px" class="mt-8 rounded-card shadow-card" />
+  </section>
+</BaseLayout>

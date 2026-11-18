@@ -22,3 +22,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# QA / design references (not part of the theme)
+design-ref/
+qa/
