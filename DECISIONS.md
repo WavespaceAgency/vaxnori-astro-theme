@@ -106,3 +106,14 @@ This file lists only what is new or different in the Astro version. It moves int
 - **Lighthouse mobile (local production build):**
   Home 99/97/100/100 · Pricing 99/97/100/100 · Blog post 100/96/100/100 · Careers 99/97/100/100 · Contact 99/96/100/100
   (Performance / Accessibility / Best Practices / SEO). TBT 0–10 ms, CLS ≤ 0.056.
+
+## Phase 8 – Final tests
+- **Versions:** Astro 7.4.13 (latest), @astrojs/sitemap 3.7.6, mdx 8.1.6, rss 4.0.19, Tailwind 4.3.5, Motion 14.14.0.
+  TypeScript stays on 6.x because `@astrojs/check` supports `^5 || ^6` only. `npm audit`: 0 vulnerabilities.
+- **`astro check`:** 0 errors, 0 warnings, 0 hints. **Build:** 25 pages, no warnings.
+- **Width matrix:** 25 pages × 320, 360, 375, 390, 414, 430, 768, 834, 1024, 1280, 1440, 1920 = 300 page views →
+  no sideways scroll, no broken images, no clipped text, no console errors.
+- **Fresh clone:** `git clone` → `npm ci` → `npm run check` → `npm run build` works with zero setup (no env vars).
+  The real `npm create astro@latest -- --template WavespaceAgency/vaxnori-astro-theme` test runs after the GitHub push (Phase 10).
+- Repo hygiene: 175 tracked files, no dist / node_modules / .env / QA files.
+  Still to replace in Phase 9: default README, starter AGENTS.md, `.github/preview.png` (currently the Next.js screenshot).
