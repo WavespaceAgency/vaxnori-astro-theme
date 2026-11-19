@@ -29,7 +29,7 @@
     "@astrojs/check": "^0.9.12",
     "typescript": "^6.0.3"
   },
-  "description": "Vaxnori AI – a free, open-source Astro theme for AI and SaaS products.",
+  "description": "Vaxnori AI – a free, open-source Astro theme for AI and SaaS products: 25 pages, smooth animations, MDX blog and careers.",
   "license": "MIT",
   "author": "Wavespace",
   "homepage": "https://vaxnori-astro-theme.vercel.app",
@@ -44,6 +44,10 @@
     "tailwindcss",
     "saas",
     "landing-page",
-    "mdx"
+    "mdx",
+    "astro-template",
+    "startup",
+    "marketing",
+    "blog"
   ]
 }

@@ -3,7 +3,7 @@
 This theme is a port of the Vaxnori AI Next.js template
 (github.com/WavespaceAgency/vaxnori-nextjs-template), which was built pixel-perfect from the Figma file.
 All Figma decisions from that build still apply (missing frames, typo fixes, legal-safe content).
-This file lists only what is new or different in the Astro version. It moves into the README at the end.
+This file lists only what is new or different in the Astro version. Linked from the README.
 
 ## Phase 0 – Rights (Astro rules)
 - Design owned by Wavespace, not sold; images AI-made or own; fonts SIL OFL → free MIT release OK.
@@ -117,3 +117,14 @@ This file lists only what is new or different in the Astro version. It moves int
   The real `npm create astro@latest -- --template WavespaceAgency/vaxnori-astro-theme` test runs after the GitHub push (Phase 10).
 - Repo hygiene: 175 tracked files, no dist / node_modules / .env / QA files.
   Still to replace in Phase 9: default README, starter AGENTS.md, `.github/preview.png` (currently the Next.js screenshot).
+
+## Phase 9 – Theme packaging
+- **README** replaced (the portal rejects the default): name, preview, demo link, `npm create astro -- --template` quick start,
+  deploy buttons (Vercel, Netlify), features, Lighthouse scores, a 12-step customisation guide, structure, credits, licence.
+  Accessibility is reported honestly as 96–97 with the one-line WCAG AA colour switch.
+- **AGENTS.md** rewritten for AI coding agents (stack, commands, folder map, config-driven rule, whitespace gotcha);
+  **CLAUDE.md** points to it.
+- **Preview images** re-shot from the Astro build: `.github/preview.png` (2400×1350, 16:9) and `.github/mobile.png`.
+- `DECISIONS.md` moved to `docs/DECISIONS.md` and linked from the README.
+- `@astrojs/markdown-satteri` stays: Astro 7 imports it as its default Markdown engine.
+- **Demo URL** in the README and package.json is the planned `https://vaxnori-astro-theme.vercel.app` – confirm after deploy (Phase 10).
