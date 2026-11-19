@@ -139,3 +139,6 @@ This file lists only what is new or different in the Astro version. Linked from 
   installs, `astro check` 0 errors, builds 25 pages.
 - **Lighthouse mobile on the live site:** Home 99/97/100/100 · Pricing 100/97/100/100 ·
   Blog post 98/96/100/100 · Careers 100/97/100/100 (Performance / Accessibility / Best Practices / SEO), CLS 0 everywhere.
+- **2026-11-19 Legal pages fix:** the sticky "Contents" list on Privacy and Terms touched the black CTA band at the end
+  of the page (0px gap – the sidebar had top padding only). Added `pb-16` (64px, same as the text column), so the list
+  now stops 64px above the CTA. FAQ (92px) and blog posts (124px) already had space.

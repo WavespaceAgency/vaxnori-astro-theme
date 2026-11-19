@@ -23,7 +23,7 @@ const toc = headings.filter((h) => h.depth === 2);
 <BaseLayout title={`${meta.title} ${meta.accent}`} description={meta.description}>
   <PageHero eyebrow="Legal" title={meta.title} accent={meta.accent} description={`Last updated: ${formatDate(meta.updated, "long")}`} class="pb-[44px]" />
   <Container bordered class="grid border-t border-dashed border-t-line-strong lg:grid-cols-[minmax(0,355px)_minmax(0,885px)]">
-    <aside class="hidden pt-10 pl-10 lg:block">
+    <aside class="hidden pt-10 pb-16 pl-10 lg:block">
       <div class="sticky top-24">
         <TableOfContents title="Contents" headings={toc} size="lg" showTitle={false} />
       </div>
