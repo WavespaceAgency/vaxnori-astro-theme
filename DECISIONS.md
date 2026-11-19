@@ -92,3 +92,17 @@ This file lists only what is new or different in the Astro version. It moves int
 - **RSS** at `/rss.xml` (`@astrojs/rss`), linked in every page `<head>`. Sitemap has 24 URLs (404 excluded automatically).
 - **Full crawl:** 24 pages × 320 / 402 / 768 / 1440 → no console errors, no sideways scroll, one h1 per page,
   all 24 internal links return 200.
+
+## Phase 7 – Quality (accessibility, motion, SEO, performance)
+- **axe-core (WCAG 2.1 AA + best practice), 25 pages × desktop + phone:** the only finding is colour contrast,
+  and only for owner-approved Figma colours: white on Primary `#ff4820` (3.4:1), `#ff4820` text on white,
+  Grey 3 `#999` (blog tabs, featured date) and the placeholder-logo grey. No other violations.
+  One-line switch for full WCAG AA documented in `src/styles/global.css` (`--brand-strong: #cc340b`).
+- **Keyboard:** skip link is the first Tab stop and moves focus to `<main>`; all 78 Tab stops on Home show a
+  visible focus style (fields: black border + 2px orange ring); menu, tabs, accordion, dialog all keyboard-operable.
+- **Reduced motion:** no running animations, every reveal visible, loops show their final frame (hero "Step 4/4 · Live").
+- **SEO:** 24 unique titles, description, canonical, Open Graph image, `lang`, Astro generator tag and JSON-LD on
+  every page. Terms description lengthened (was 45 characters). One post excerpt is 165 characters (Google may cut it).
+- **Lighthouse mobile (local production build):**
+  Home 99/97/100/100 · Pricing 99/97/100/100 · Blog post 100/96/100/100 · Careers 99/97/100/100 · Contact 99/96/100/100
+  (Performance / Accessibility / Best Practices / SEO). TBT 0–10 ms, CLS ≤ 0.056.

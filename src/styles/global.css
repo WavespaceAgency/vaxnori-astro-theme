@@ -22,7 +22,9 @@
 :root {
   /* Brand */
   --brand: #ff4820; /* Figma "Primary" – decorative fills, icons, large shapes */
-  --brand-strong: #ff4820; /* Buttons + small brand text (Figma "Primary") */
+  /* Buttons + small brand text (Figma "Primary"). White on #ff4820 is 3.4:1 – below WCAG AA (4.5:1).
+     For full WCAG AA contrast use #cc340b here (and #737373 for --grey-3). */
+  --brand-strong: #ff4820;
   --brand-hover: #e63b15;
   --brand-soft: #fff1ec;
 
