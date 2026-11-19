@@ -128,3 +128,14 @@ This file lists only what is new or different in the Astro version. Linked from 
 - `DECISIONS.md` moved to `docs/DECISIONS.md` and linked from the README.
 - `@astrojs/markdown-satteri` stays: Astro 7 imports it as its default Markdown engine.
 - **Demo URL** in the README and package.json is the planned `https://vaxnori-astro-theme.vercel.app` – confirm after deploy (Phase 10).
+
+## Phase 10 – GitHub and live demo
+- Public repo: https://github.com/WavespaceAgency/vaxnori-astro-theme (MIT detected, About description + website set).
+- Live demo: https://vaxnori-astro-theme.vercel.app – Vercel project connected to `main`, auto-deploys on every push,
+  no settings or environment variables. The site URL is detected from Vercel (`VERCEL_PROJECT_PRODUCTION_URL`).
+- Live checks: 24 sitemap pages return 200, unknown URLs return 404, robots/RSS/manifest/OG images served,
+  generator tag "Astro v7.4.13", canonical links use the live domain.
+- **Template test:** `npm create astro@latest my-site -- --template WavespaceAgency/vaxnori-astro-theme` →
+  installs, `astro check` 0 errors, builds 25 pages.
+- **Lighthouse mobile on the live site:** Home 99/97/100/100 · Pricing 100/97/100/100 ·
+  Blog post 98/96/100/100 · Careers 100/97/100/100 (Performance / Accessibility / Best Practices / SEO), CLS 0 everywhere.
